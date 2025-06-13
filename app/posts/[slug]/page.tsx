@@ -18,9 +18,11 @@ import type { Metadata } from "next";
 import { generateMetadata as generatePageMetadata } from "@/lib/metadata";
 import { SchemaMarkup } from "@/components/schema/schema-markup";
 
-type Props = {
-  params: { slug: string }
-  searchParams: { [key: string]: string | string[] | undefined }
+interface PageProps {
+  params: {
+    slug: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export async function generateStaticParams() {
@@ -31,7 +33,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const post = await getPostBySlug(params.slug);
   
   return generatePageMetadata({
@@ -41,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function PostPage({ params }: Props) {
+export default async function PostPage({ params }: PageProps) {
   const post = await getPostBySlug(params.slug);
   const featuredMedia = post.featured_media
     ? await getFeaturedMediaById(post.featured_media)
