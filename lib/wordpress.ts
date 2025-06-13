@@ -235,4 +235,87 @@ export async function searchAuthors(query: string): Promise<Author[]> {
   return wordpressFetch<Author[]>(url);
 }
 
+interface MenuItem {
+  id: string;
+  label: string;
+  path: string;
+  parentId: string | null;
+  children?: MenuItem[];
+}
+
+export async function getMenu(location: string = 'PRIMARY'): Promise<MenuItem[]> {
+  const query = `
+    query GetMenu {
+      menus {
+        nodes {
+          name
+          menuItems {
+            nodes {
+              id
+              label
+              path
+              parentId
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(`${baseUrl}/graphql`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch menu: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Debug the response
+    console.log('GraphQL Response:', data);
+
+    if (data.errors) {
+      console.error('GraphQL Errors:', data.errors);
+      return [];
+    }
+
+    // Get the first menu's items
+    const menuItems = data.data?.menus?.nodes?.[0]?.menuItems?.nodes || [];
+
+    // Convert flat menu to hierarchical structure
+    const menuMap = new Map<string, MenuItem>();
+    const rootItems: MenuItem[] = [];
+
+    menuItems.forEach((item: MenuItem) => {
+      menuMap.set(item.id, { ...item, children: [] });
+    });
+
+    menuItems.forEach((item: MenuItem) => {
+      const menuItem = menuMap.get(item.id)!;
+      if (!item.parentId) {
+        rootItems.push(menuItem);
+      } else {
+        const parent = menuMap.get(item.parentId);
+        if (parent) {
+          parent.children = parent.children || [];
+          parent.children.push(menuItem);
+        }
+      }
+    });
+
+    return rootItems;
+  } catch (error) {
+    console.error('Error fetching menu:', error);
+    return [];
+  }
+}
+
 export { WordPressAPIError };

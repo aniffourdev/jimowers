@@ -76,6 +76,11 @@ export interface Post extends WPEntity {
   categories: number[];
   tags: number[];
   meta: Record<string, unknown>;
+  _embedded?: {
+    'wp:featuredmedia'?: FeaturedMedia[];
+    'wp:term'?: Array<Category | Tag>[];
+    'author'?: Author[];
+  };
 }
 
 export interface Page extends WPEntity {

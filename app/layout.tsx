@@ -18,6 +18,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { Metadata } from "next";
+import { DropdownMenu } from "@/components/nav/dropdown-menu";
+import { getMenu } from "@/lib/wordpress";
+import { SiteHeader } from "@/components/site-header";
+import { Nav } from "@/components/nav";
 
 const font = FontSans({
   subsets: ["latin"],
@@ -25,7 +29,7 @@ const font = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: "WordPress & Next.js Starter by 9d8",
+  title: "Best Lawn Mowers For Your Garden",
   description:
     "A starter template for Next.js with WordPress as a headless CMS.",
   metadataBase: new URL(siteConfig.site_domain),
@@ -34,11 +38,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const menuItems = await getMenu();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -49,8 +55,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Nav />
-          {children}
+          <Nav menuItems={menuItems} />
+          <main className="flex-1">{children}</main>
           <Footer />
         </ThemeProvider>
         <Analytics />
@@ -58,51 +64,6 @@ export default function RootLayout({
     </html>
   );
 }
-
-const Nav = ({ className, children, id }: NavProps) => {
-  return (
-    <nav
-      className={cn("sticky z-50 top-0 bg-background", "border-b", className)}
-      id={id}
-    >
-      <div
-        id="nav-container"
-        className="max-w-5xl mx-auto py-4 px-6 sm:px-8 flex justify-between items-center"
-      >
-        <Link
-          className="hover:opacity-75 transition-all flex gap-4 items-center"
-          href="/"
-        >
-          <Image
-            src={Logo}
-            alt="Logo"
-            loading="eager"
-            className="dark:invert"
-            width={42}
-            height={26.44}
-          ></Image>
-          <h2 className="text-sm">{siteConfig.site_name}</h2>
-        </Link>
-        {children}
-        <div className="flex items-center gap-2">
-          <div className="mx-2 hidden md:flex">
-            {Object.entries(mainMenu).map(([key, href]) => (
-              <Button key={href} asChild variant="ghost" size="sm">
-                <Link href={href}>
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </Link>
-              </Button>
-            ))}
-          </div>
-          <Button asChild className="hidden sm:flex">
-            <Link href="https://github.com/9d8dev/next-wp">Get Started</Link>
-          </Button>
-          <MobileNav />
-        </div>
-      </div>
-    </nav>
-  );
-};
 
 const Footer = () => {
   return (

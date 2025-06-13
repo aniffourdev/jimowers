@@ -23,11 +23,15 @@ import { FilterPosts } from "@/components/posts/filter";
 import { SearchInput } from "@/components/posts/search-input";
 
 import type { Metadata } from "next";
+import { generateMetadata } from "@/lib/metadata";
+import { SchemaMarkup } from "@/components/schema/schema-markup";
+import { siteConfig } from "@/site.config";
 
-export const metadata: Metadata = {
-  title: "Blog Posts",
-  description: "Browse all our blog posts",
-};
+export const metadata = generateMetadata({
+  title: "Blog Posts | " + siteConfig.site_name,
+  description: "Browse all our blog posts about lawn mowers and garden equipment.",
+  path: "/posts",
+});
 
 export const dynamic = "auto";
 export const revalidate = 600;
@@ -75,71 +79,74 @@ export default async function Page({
   };
 
   return (
-    <Section>
-      <Container>
-        <div className="space-y-8">
-          <Prose>
-            <h2>All Posts</h2>
-            <p className="text-muted-foreground">
-              {posts.length} {posts.length === 1 ? "post" : "posts"} found
-              {search && " matching your search"}
-            </p>
-          </Prose>
+    <>
+      <SchemaMarkup type="index" posts={posts} />
+      <Section>
+        <Container>
+          <div className="space-y-8">
+            <Prose>
+              <h2>All Posts</h2>
+              <p className="text-muted-foreground">
+                {posts.length} {posts.length === 1 ? "post" : "posts"} found
+                {search && " matching your search"}
+              </p>
+            </Prose>
 
-          <div className="space-y-4">
-            <SearchInput defaultValue={search} />
+            <div className="space-y-4">
+              <SearchInput defaultValue={search} />
 
-            <FilterPosts
-              authors={authors}
-              tags={tags}
-              categories={categories}
-              selectedAuthor={author}
-              selectedTag={tag}
-              selectedCategory={category}
-            />
+              <FilterPosts
+                authors={authors}
+                tags={tags}
+                categories={categories}
+                selectedAuthor={author}
+                selectedTag={tag}
+                selectedCategory={category}
+              />
+            </div>
+
+            {paginatedPosts.length > 0 ? (
+              <div className="grid md:grid-cols-3 gap-4">
+                {paginatedPosts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
+            ) : (
+              <div className="h-24 w-full border rounded-lg bg-accent/25 flex items-center justify-center">
+                <p>No posts found</p>
+              </div>
+            )}
+
+            {totalPages > 1 && (
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      className={
+                        page <= 1 ? "pointer-events-none opacity-50" : ""
+                      }
+                      href={createPaginationUrl(page - 1)}
+                    />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink href={createPaginationUrl(page)}>
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext
+                      className={
+                        page >= totalPages ? "pointer-events-none opacity-50" : ""
+                      }
+                      href={createPaginationUrl(page + 1)}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
           </div>
-
-          {paginatedPosts.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-4">
-              {paginatedPosts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          ) : (
-            <div className="h-24 w-full border rounded-lg bg-accent/25 flex items-center justify-center">
-              <p>No posts found</p>
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    className={
-                      page <= 1 ? "pointer-events-none opacity-50" : ""
-                    }
-                    href={createPaginationUrl(page - 1)}
-                  />
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink href={createPaginationUrl(page)}>
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationNext
-                    className={
-                      page >= totalPages ? "pointer-events-none opacity-50" : ""
-                    }
-                    href={createPaginationUrl(page + 1)}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
-        </div>
-      </Container>
-    </Section>
+        </Container>
+      </Section>
+    </>
   );
 }

@@ -3,16 +3,17 @@ import { Section, Container, Prose } from "@/components/craft";
 import { Metadata } from "next";
 import BackButton from "@/components/back";
 import Link from "next/link";
+import { generateMetadata } from "@/lib/metadata";
+import { siteConfig } from "@/site.config";
 
-export const metadata: Metadata = {
-  title: "All Authors",
-  description: "Browse all authors of our blog posts",
-  alternates: {
-    canonical: "/posts/authors",
-  },
-};
+export const metadata = generateMetadata({
+  title: "Authors | " + siteConfig.site_name,
+  description: "Our blog authors and contributors.",
+  path: "/posts/authors",
+  noindex: true,
+});
 
-export default async function Page() {
+export default async function AuthorsPage() {
   const authors = await getAllAuthors();
 
   return (

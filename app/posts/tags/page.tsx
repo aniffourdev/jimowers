@@ -3,14 +3,15 @@ import { Section, Container, Prose } from "@/components/craft";
 import { Metadata } from "next";
 import BackButton from "@/components/back";
 import Link from "next/link";
+import { generateMetadata } from "@/lib/metadata";
+import { siteConfig } from "@/site.config";
 
-export const metadata: Metadata = {
-  title: "All Tags",
-  description: "Browse all tags of our blog posts",
-  alternates: {
-    canonical: "/posts/tags",
-  },
-};
+export const metadata = generateMetadata({
+  title: "Tags | " + siteConfig.site_name,
+  description: "Browse our blog posts by tags.",
+  path: "/posts/tags",
+  noindex: true,
+});
 
 export default async function Page() {
   const tags = await getAllTags();

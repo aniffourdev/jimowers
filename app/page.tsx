@@ -4,18 +4,67 @@ import Balancer from "react-wrap-balancer";
 
 // Next.js Imports
 import Link from "next/link";
+import Image from "next/image";
 
 // Icons
 import { File, Pen, Tag, Diamond, User, Folder } from "lucide-react";
 import { WordPressIcon } from "@/components/icons/wordpress";
 import { NextJsIcon } from "@/components/icons/nextjs";
 
+// WordPress imports
+import { getAllCategories, getPostsByCategory } from "@/lib/wordpress";
+import { PostCard } from "@/components/posts/post-card";
+
 // This page is using the craft.tsx component and design system
-export default function Home() {
+export default async function Home() {
+  // Fetch all categories
+  const categories = await getAllCategories();
+  
+  // Fetch posts for each category
+  const categoryPosts = await Promise.all(
+    categories.map(async (category) => {
+      const posts = await getPostsByCategory(category.id);
+      return {
+        category,
+        posts: posts.slice(0, 3) // Get only 3 posts per category
+      };
+    })
+  );
+
   return (
     <Section>
       <Container>
         <ToDelete />
+        
+        {/* Category Sections */}
+        <div className="mt-12 space-y-12">
+          {categoryPosts.map(({ category, posts }) => (
+            <div key={category.id} className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <h2 className="text-2xl font-bold">{category.name}</h2>
+                  {category.description && (
+                    <p className="text-sm text-muted-foreground">
+                      {category.description}
+                    </p>
+                  )}
+                </div>
+                <Link 
+                  href={`/posts/categories/${category.slug}`}
+                  className="text-sm text-muted-foreground hover:underline"
+                >
+                  View all posts →
+                </Link>
+              </div>
+              
+              <div className="grid md:grid-cols-3 gap-6">
+                {posts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </Container>
     </Section>
   );

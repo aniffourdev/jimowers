@@ -4,9 +4,10 @@
 import * as React from "react";
 import Link, { LinkProps } from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 // Utility Imports
-import { Menu, ArrowRightSquare } from "lucide-react";
+import { Menu, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Component Imports
@@ -21,54 +22,98 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 
-import { mainMenu, contentMenu } from "@/menu.config";
 import { siteConfig } from "@/site.config";
 
-export function MobileNav() {
-  const [open, setOpen] = React.useState(false);
+interface MenuItem {
+  id: string;
+  label: string;
+  path: string;
+  parentId: string | null;
+  children?: MenuItem[];
+}
+
+interface MobileNavProps {
+  items: MenuItem[];
+}
+
+export function MobileNav({ items }: MobileNavProps) {
+  const [open, setOpen] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
+  const toggleItem = (id: string) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
           variant="ghost"
-          className="px-0 border w-10 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
+          className="mr-2 px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 md:hidden"
         >
-          <Menu />
+          <Menu className="h-6 w-6" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="pr-0">
-        <SheetHeader>
-          <SheetTitle className="text-left">
-            <MobileLink
+        <SheetHeader className="mb-6">
+          <SheetTitle>
+            <Link
               href="/"
               className="flex items-center"
-              onOpenChange={setOpen}
+              onClick={() => setOpen(false)}
             >
-              <ArrowRightSquare className="mr-2 h-4 w-4" />
-              <span>{siteConfig.site_name}</span>
-            </MobileLink>
+              <span className="font-bold text-xl">{siteConfig.site_name}</span>
+            </Link>
           </SheetTitle>
         </SheetHeader>
-        <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
-          <div className="flex flex-col space-y-3">
-            <h3 className="text-small mt-6">Menu</h3>
-            <Separator />
-            {Object.entries(mainMenu).map(([key, href]) => (
-              <MobileLink key={key} href={href} onOpenChange={setOpen}>
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </MobileLink>
-            ))}
-            <h3 className="text-small pt-6">Blog Menu</h3>
-            <Separator />
-            {Object.entries(contentMenu).map(([key, href]) => (
-              <MobileLink key={key} href={href} onOpenChange={setOpen}>
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </MobileLink>
-            ))}
-          </div>
-        </ScrollArea>
+        <nav className="flex flex-col space-y-4">
+          {items.map((item) => (
+            <div key={item.id} className="flex flex-col">
+              {item.children && item.children.length > 0 ? (
+                <div className="flex flex-col">
+                  <button
+                    onClick={() => toggleItem(item.id)}
+                    className="flex items-center justify-between py-2 text-base font-medium hover:text-primary transition-colors"
+                  >
+                    {item.label}
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 transition-transform duration-200",
+                        expandedItems[item.id] ? "rotate-180" : ""
+                      )}
+                    />
+                  </button>
+                  {expandedItems[item.id] && (
+                    <div className="pl-4 mt-2 space-y-2 border-l-2 border-muted">
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.id}
+                          href={child.path}
+                          onClick={() => setOpen(false)}
+                          className="block py-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  href={item.path}
+                  onClick={() => setOpen(false)}
+                  className="py-2 text-base font-medium hover:text-primary transition-colors"
+                >
+                  {item.label}
+                </Link>
+              )}
+            </div>
+          ))}
+        </nav>
       </SheetContent>
     </Sheet>
   );
