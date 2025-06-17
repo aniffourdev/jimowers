@@ -497,3 +497,4 @@ This codebase includes a [CLAUDE.md](./CLAUDE.md) file that provides guidance to
 This ensures AI assistants maintain consistency and follow project conventions when helping with development tasks.
 
 Built by [Bridger Tower](https://twitter.com/bridgertower) and [Cameron Youngblood](https://twitter.com/youngbloodcyb) at [9d8](https://9d8.dev)
+# jimowers
