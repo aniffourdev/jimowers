@@ -139,7 +139,7 @@ const Footer = () => {
             </p>
           </div>
           <div className="flex flex-col gap-2 text-sm">
-            <h5 className="font-medium text-base">Website</h5>
+            <h4 className="font-medium text-base">Website</h4>
             {Object.entries(mainMenu).map(([key, href]) => (
               <Link
                 className="hover:underline underline-offset-4"
@@ -151,7 +151,7 @@ const Footer = () => {
             ))}
           </div>
           <div className="flex flex-col gap-2 text-sm">
-            <h5 className="font-medium text-base">Blog</h5>
+            <h4 className="font-medium text-base">Blog</h4>
             {Object.entries(contentMenu).map(([key, href]) => (
               <Link
                 className="hover:underline underline-offset-4"
