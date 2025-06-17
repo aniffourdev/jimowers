@@ -1,23 +1,52 @@
 // Craft Imports
 import { Section, Container, Prose } from "@/components/craft";
-import Balancer from "react-wrap-balancer";
+import { WordPressIcon } from "@/components/icons/wordpress";
+import { PostCard } from "@/components/posts/post-card";
+import { getAllCategories, getPostsByCategory } from "@/lib/wordpress";
+import { Balancer } from "@/components/ui/balancer";
 
 // Next.js Imports
+import type { Metadata } from "next";
 import Link from "next/link";
-
-// Icons
-import { File, Pen, Tag, Diamond, User, Folder } from "lucide-react";
-import { WordPressIcon } from "@/components/icons/wordpress";
 import { NextJsIcon } from "@/components/icons/nextjs";
+import { Pen, File, User, Tag, Diamond, Folder } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Home",
+  description: "Welcome to our blog",
+};
 
 // This page is using the craft.tsx component and design system
-export default function Home() {
+export default async function Home() {
+  // Get all categories
+  const categories = await getAllCategories();
+
   return (
-    <Section>
-      <Container>
-        <ToDelete />
-      </Container>
-    </Section>
+    <main>
+      {categories.map(async (category) => {
+        // Get posts for this category
+        const posts = await getPostsByCategory(category.id);
+
+        return (
+          <Section key={category.id}>
+            <Container>
+              <Prose>
+                <h2>{category.name}</h2>
+                {category.description && (
+                  <p className="text-muted-foreground">{category.description}</p>
+                )}
+              </Prose>
+
+              <div className="grid md:grid-cols-3 gap-4 mt-8">
+                {posts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
+            </Container>
+          </Section>
+        );
+      })}
+    </main>
   );
 }
 

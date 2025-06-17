@@ -1,11 +1,5 @@
-type SiteConfig = {
-  site_domain: string;
-  site_name: string;
-  site_description: string;
-};
-
-export const siteConfig: SiteConfig = {
-  site_name: "next-wp",
-  site_description: "Starter template for Headless WordPress with Next.js",
-  site_domain: "https://next-wp.com",
-};
+export const siteConfig = {
+  site_name: process.env.NEXT_PUBLIC_SITE_NAME || 'My Website',
+  site_description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'A WordPress site built with Next.js',
+  site_domain: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+} as const;

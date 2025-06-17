@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: `${process.env.WORDPRESS_HOSTNAME}`,
+        hostname: `gvr.ltm.temporary.site/mower/`,
         port: "",
         pathname: "/**",
       },
@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/admin",
-        destination: `${process.env.WORDPRESS_URL}/wp-admin`,
+        destination: `https://gvr.ltm.temporary.site/mower/wp-admin`,
         permanent: true,
       },
     ];

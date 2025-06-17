@@ -38,17 +38,35 @@ interface MediaDetails {
   sizes: Record<string, MediaSize>;
 }
 
-export interface FeaturedMedia extends WPEntity {
+export interface FeaturedMedia {
+  id: number;
+  date: string;
+  slug: string;
+  type: string;
+  link: string;
   title: RenderedTitle;
   author: number;
-  caption: {
-    rendered: string;
-  };
-  alt_text: string;
+  caption: RenderedContent;
+  description: RenderedContent;
   media_type: string;
   mime_type: string;
-  media_details: MediaDetails;
+  media_details: {
+    width: number;
+    height: number;
+    file: string;
+    sizes: {
+      [key: string]: {
+        file: string;
+        width: number;
+        height: number;
+        mime_type: string;
+        source_url: string;
+      };
+    };
+  };
   source_url: string;
+  width: number;
+  height: number;
 }
 
 // Content types
@@ -76,6 +94,14 @@ export interface Post extends WPEntity {
   categories: number[];
   tags: number[];
   meta: Record<string, unknown>;
+  _embedded?: {
+    'wp:featuredmedia'?: Array<{
+      source_url: string;
+    }>;
+    author?: Array<{
+      name: string;
+    }>;
+  };
 }
 
 export interface Page extends WPEntity {
@@ -104,8 +130,7 @@ interface Taxonomy {
 }
 
 export interface Category extends Taxonomy {
-  taxonomy: "category";
-  parent: number;
+ parent: number;
 }
 
 export interface Tag extends Taxonomy {
@@ -113,6 +138,7 @@ export interface Tag extends Taxonomy {
 }
 
 export interface Author {
+  social_links: never[];
   id: number;
   name: string;
   url: string;
@@ -229,4 +255,11 @@ export interface FilterBarProps {
   onAuthorChange?: (authorId: Author["id"] | undefined) => void;
   onTagChange?: (tagId: Tag["id"] | undefined) => void;
   onCategoryChange?: (categoryId: Category["id"] | undefined) => void;
+}
+
+export const metadata = {
+  // ... other metadata
+  other: {
+    'application/ld+json': generateArticleSchema(post)
+  }
 }

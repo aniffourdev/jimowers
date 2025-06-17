@@ -102,13 +102,13 @@ export default async function Page({
               Published {date} by{" "}
               {author.name && (
                 <span>
-                  <a href={`/posts/?author=${author.id}`}>{author.name}</a>{" "}
+                  <a href={`/?author=${author.id}`}>{author.name}</a>{" "}
                 </span>
               )}
             </h5>
 
             <Link
-              href={`/posts/?category=${category.id}`}
+              href={`/?category=${category.id}`}
               className={cn(
                 badgeVariants({ variant: "outline" }),
                 "!no-underline"

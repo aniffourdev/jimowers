@@ -18,6 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { Metadata } from "next";
+import { generateWebSiteSchema } from "@/lib/schema";
 
 const font = FontSans({
   subsets: ["latin"],
@@ -25,12 +26,25 @@ const font = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: "WordPress & Next.js Starter by 9d8",
-  description:
-    "A starter template for Next.js with WordPress as a headless CMS.",
-  metadataBase: new URL(siteConfig.site_domain),
-  alternates: {
-    canonical: "/",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'),
+  title: {
+    default: process.env.NEXT_PUBLIC_SITE_NAME || 'My Website',
+    template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME || 'My Website'}`
+  },
+  description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'A WordPress site built with Next.js',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  other: {
+    'application/ld+json': generateWebSiteSchema(),
   },
 };
 
@@ -152,7 +166,7 @@ const Footer = () => {
         <Container className="border-t not-prose flex flex-col md:flex-row md:gap-2 gap-6 justify-between md:items-center">
           <ThemeToggle />
           <p className="text-muted-foreground">
-            &copy; <a href="https://9d8.dev">9d8</a>. All rights reserved.
+            &copy; <Link href="/" className="font-semibold">{siteConfig.site_name}</Link>. All rights reserved.
             2025-present.
           </p>
         </Container>
