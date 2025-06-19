@@ -9,11 +9,12 @@ export default async function AuthorContent({ author }: { author: Author }) {
   return (
     <Section>
       <Container>
-        <Prose>
-          <h1>Author: {author.name}</h1>
-          <p className="text-muted-foreground">
-            {posts.length} {posts.length === 1 ? "post" : "posts"} by this author
-          </p>
+      <Prose>
+          <h1 className="!uppercase !font-[600] !text-xs !tracking-widest">Posts By:</h1>
+          <p className="!text-3xl !font-bold !uppercase !mt-1">{author.name}</p>
+          {/* <p className="text-muted-foreground">
+            {posts.length} {posts.length === 1 ? "post" : "posts"} in this category
+          </p> */}
         </Prose>
 
         <div className="grid md:grid-cols-3 gap-4 mt-8">
