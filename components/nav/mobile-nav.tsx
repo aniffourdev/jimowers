@@ -112,7 +112,7 @@ function MobileMenuItem({ item, onOpenChange }: MobileMenuItemProps) {
             )}
           />
         </button>
-        {isOpen && (
+        {isOpen && item.childItems?.nodes && (
           <div className="flex flex-col space-y-3 pl-4 border-l">
             {item.childItems.nodes.map((child) => (
               <MobileMenuItem
