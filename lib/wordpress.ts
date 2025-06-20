@@ -12,15 +12,27 @@ import type {
   FeaturedMedia,
 } from "./wordpress.d";
 
-const baseUrl = process.env.WORDPRESS_URL;
+// WordPress API Configuration
+const REST_API_URL = 'https://gvr.ltm.temporary.site/mower/wp-json/wp/v2';
+const GRAPHQL_URL = 'https://gvr.ltm.temporary.site/mower/graphql';
 
-if (!baseUrl) {
-  throw new Error("WORDPRESS_URL environment variable is not defined");
+// Menu Types
+export interface MenuItem {
+  id: string;
+  label: string;
+  uri: string;
+  parentId: string | null;
+  childItems?: {
+    nodes: MenuItem[];
+  };
 }
 
-function getUrl(path: string, query?: Record<string, any>) {
-  const params = query ? querystring.stringify(query) : null;
-  return `${baseUrl}${path}${params ? `?${params}` : ""}`;
+export interface Menu {
+  id: string;
+  name: string;
+  menuItems: {
+    nodes: MenuItem[];
+  };
 }
 
 class WordPressAPIError extends Error {
@@ -30,26 +42,119 @@ class WordPressAPIError extends Error {
   }
 }
 
-async function wordpressFetch<T>(url: string): Promise<T> {
-  const userAgent = "Next.js WordPress Client";
-
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": userAgent,
-    },
-  });
-
-  if (!response.ok) {
-    throw new WordPressAPIError(
-      `WordPress API request failed: ${response.statusText}`,
-      response.status,
-      url
-    );
+// GraphQL Menu Query
+const MENU_QUERY = `
+  query GetMenus {
+    menus(first: 100) {
+      nodes {
+        id
+        name
+        menuItems(first: 100) {
+          nodes {
+            id
+            label
+            uri
+            parentId
+            childItems(first: 100) {
+              nodes {
+                id
+                label
+                uri
+                parentId
+                childItems(first: 100) {
+                  nodes {
+                    id
+                    label
+                    uri
+                    parentId
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
+`;
 
-  return response.json();
+// Menu Functions
+export async function getMenu(): Promise<Menu | null> {
+  try {
+    console.log('Fetching menu from:', GRAPHQL_URL);
+
+    const response = await fetch(GRAPHQL_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: MENU_QUERY,
+      }),
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const json = await response.json();
+    // console.log('Menu Response:', json);
+
+    if (json.errors) {
+      console.error('GraphQL Errors:', json.errors);
+      return null;
+    }
+
+    // Find the primary menu from the list of menus
+    let primaryMenu = json.data?.menus?.nodes?.find((menu: any) => 
+      menu.name.toLowerCase().includes('primary') || 
+      menu.name.toLowerCase().includes('main') ||
+      menu.name.toLowerCase().includes('header')
+    );
+
+    if (!primaryMenu) {
+      console.log('Available menus:', json.data?.menus?.nodes?.map((m: any) => m.name));
+      // If no primary menu found, use the first menu
+      primaryMenu = json.data?.menus?.nodes?.[0] || null;
+    }
+
+    if (primaryMenu && primaryMenu.menuItems && primaryMenu.menuItems.nodes) {
+      const cleanUri = (uri: string) => {
+        if (!uri) return "/";
+        if (uri.startsWith("/category/")) {
+          return uri.substring("/category".length);
+        }
+        if (uri.startsWith("/tag/")) {
+          return uri.substring("/tag".length);
+        }
+        return uri;
+      };
+
+      const processMenuItems = (items: MenuItem[]): MenuItem[] => {
+        return items.map((item) => ({
+          ...item,
+          uri: cleanUri(item.uri),
+          childItems:
+            item.childItems && item.childItems.nodes
+              ? { nodes: processMenuItems(item.childItems.nodes) }
+              : undefined,
+        }));
+      };
+
+      primaryMenu.menuItems.nodes = processMenuItems(
+        primaryMenu.menuItems.nodes
+      );
+    }
+
+    return primaryMenu;
+  } catch (error) {
+    console.error('Error fetching menu:', error);
+    return null;
+  }
 }
 
+// REST API Functions
 export async function getAllPosts(filterParams?: {
   author?: string;
   tag?: string;
@@ -63,176 +168,123 @@ export async function getAllPosts(filterParams?: {
 
   if (filterParams?.search) {
     query.search = filterParams.search;
-
-    if (filterParams?.author) {
-      query.author = filterParams.author;
-    }
-    if (filterParams?.tag) {
-      query.tags = filterParams.tag;
-    }
-    if (filterParams?.category) {
-      query.categories = filterParams.category;
-    }
-  } else {
-    if (filterParams?.author) {
-      query.author = filterParams.author;
-    }
-    if (filterParams?.tag) {
-      query.tags = filterParams.tag;
-    }
-    if (filterParams?.category) {
-      query.categories = filterParams.category;
-    }
+  }
+  if (filterParams?.author) {
+    query.author = filterParams.author;
+  }
+  if (filterParams?.tag) {
+    query.tags = filterParams.tag;
+  }
+  if (filterParams?.category) {
+    query.categories = filterParams.category;
   }
 
-  const url = getUrl("/wp-json/wp/v2/posts", query);
-  return wordpressFetch<Post[]>(url);
+  return wordpressFetch<Post[]>(`${REST_API_URL}/posts`, query);
 }
 
 export async function getPostById(id: number): Promise<Post> {
-  const url = getUrl(`/wp-json/wp/v2/posts/${id}`);
-  return wordpressFetch<Post>(url);
+  return wordpressFetch<Post>(`${REST_API_URL}/posts/${id}`);
 }
 
 export async function getPostBySlug(slug: string): Promise<Post> {
-  const url = getUrl("/wp-json/wp/v2/posts", { slug });
-  const response = await wordpressFetch<Post[]>(url);
+  const response = await wordpressFetch<Post[]>(`${REST_API_URL}/posts`, { slug });
   return response[0];
 }
 
 export async function getAllCategories(): Promise<Category[]> {
-  const url = getUrl("/wp-json/wp/v2/categories");
-  return wordpressFetch<Category[]>(url);
+  return wordpressFetch<Category[]>(`${REST_API_URL}/categories`);
 }
 
 export async function getCategoryById(id: number): Promise<Category> {
-  const url = getUrl(`/wp-json/wp/v2/categories/${id}`);
-  return wordpressFetch<Category>(url);
+  return wordpressFetch<Category>(`${REST_API_URL}/categories/${id}`);
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category> {
-  const url = getUrl("/wp-json/wp/v2/categories", { slug });
-  const response = await wordpressFetch<Category[]>(url);
+  const response = await wordpressFetch<Category[]>(`${REST_API_URL}/categories`, { slug });
   return response[0];
 }
 
 export async function getPostsByCategory(categoryId: number): Promise<Post[]> {
-  const url = getUrl("/wp-json/wp/v2/posts", { categories: categoryId });
-  return wordpressFetch<Post[]>(url);
+  return wordpressFetch<Post[]>(`${REST_API_URL}/posts`, { categories: categoryId });
 }
 
 export async function getPostsByTag(tagId: number): Promise<Post[]> {
-  const url = getUrl("/wp-json/wp/v2/posts", { tags: tagId });
-  return wordpressFetch<Post[]>(url);
-}
-
-export async function getTagsByPost(postId: number): Promise<Tag[]> {
-  const url = getUrl("/wp-json/wp/v2/tags", { post: postId });
-  return wordpressFetch<Tag[]>(url);
+  return wordpressFetch<Post[]>(`${REST_API_URL}/posts`, { tags: tagId });
 }
 
 export async function getAllTags(): Promise<Tag[]> {
-  const url = getUrl("/wp-json/wp/v2/tags");
-  return wordpressFetch<Tag[]>(url);
+  return wordpressFetch<Tag[]>(`${REST_API_URL}/tags`);
 }
 
 export async function getTagById(id: number): Promise<Tag> {
-  const url = getUrl(`/wp-json/wp/v2/tags/${id}`);
-  return wordpressFetch<Tag>(url);
+  return wordpressFetch<Tag>(`${REST_API_URL}/tags/${id}`);
 }
 
 export async function getTagBySlug(slug: string): Promise<Tag> {
-  const url = getUrl("/wp-json/wp/v2/tags", { slug });
-  const response = await wordpressFetch<Tag[]>(url);
+  const response = await wordpressFetch<Tag[]>(`${REST_API_URL}/tags`, { slug });
   return response[0];
 }
 
 export async function getAllPages(): Promise<Page[]> {
-  const url = getUrl("/wp-json/wp/v2/pages");
-  return wordpressFetch<Page[]>(url);
+  return wordpressFetch<Page[]>(`${REST_API_URL}/pages`);
 }
 
 export async function getPageById(id: number): Promise<Page> {
-  const url = getUrl(`/wp-json/wp/v2/pages/${id}`);
-  return wordpressFetch<Page>(url);
+  return wordpressFetch<Page>(`${REST_API_URL}/pages/${id}`);
 }
 
 export async function getPageBySlug(slug: string): Promise<Page> {
-  const url = getUrl("/wp-json/wp/v2/pages", { slug });
-  const response = await wordpressFetch<Page[]>(url);
+  const response = await wordpressFetch<Page[]>(`${REST_API_URL}/pages`, { slug });
   return response[0];
 }
 
 export async function getAllAuthors(): Promise<Author[]> {
-  const url = getUrl("/wp-json/wp/v2/users");
-  return wordpressFetch<Author[]>(url);
+  return wordpressFetch<Author[]>(`${REST_API_URL}/users`);
 }
 
 export async function getAuthorById(id: number): Promise<Author> {
-  const url = getUrl(`/wp-json/wp/v2/users/${id}`);
-  return wordpressFetch<Author>(url);
+  return wordpressFetch<Author>(`${REST_API_URL}/users/${id}`);
 }
 
 export async function getAuthorBySlug(slug: string): Promise<Author> {
-  const url = getUrl("/wp-json/wp/v2/users", { slug });
-  const response = await wordpressFetch<Author[]>(url);
+  const response = await wordpressFetch<Author[]>(`${REST_API_URL}/users`, { slug });
   return response[0];
 }
 
 export async function getPostsByAuthor(authorId: number): Promise<Post[]> {
-  const url = getUrl("/wp-json/wp/v2/posts", { author: authorId });
-  return wordpressFetch<Post[]>(url);
-}
-
-export async function getPostsByAuthorSlug(
-  authorSlug: string
-): Promise<Post[]> {
-  const author = await getAuthorBySlug(authorSlug);
-  const url = getUrl("/wp-json/wp/v2/posts", { author: author.id });
-  return wordpressFetch<Post[]>(url);
-}
-
-export async function getPostsByCategorySlug(
-  categorySlug: string
-): Promise<Post[]> {
-  const category = await getCategoryBySlug(categorySlug);
-  const url = getUrl("/wp-json/wp/v2/posts", { categories: category.id });
-  return wordpressFetch<Post[]>(url);
-}
-
-export async function getPostsByTagSlug(tagSlug: string): Promise<Post[]> {
-  const tag = await getTagBySlug(tagSlug);
-  const url = getUrl("/wp-json/wp/v2/posts", { tags: tag.id });
-  return wordpressFetch<Post[]>(url);
+  return wordpressFetch<Post[]>(`${REST_API_URL}/posts`, { author: authorId });
 }
 
 export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia> {
-  const url = getUrl(`/wp-json/wp/v2/media/${id}`);
-  return wordpressFetch<FeaturedMedia>(url);
+  return wordpressFetch<FeaturedMedia>(`${REST_API_URL}/media/${id}`);
 }
 
-export async function searchCategories(query: string): Promise<Category[]> {
-  const url = getUrl("/wp-json/wp/v2/categories", {
-    search: query,
-    per_page: 100,
-  });
-  return wordpressFetch<Category[]>(url);
-}
+async function wordpressFetch<T>(
+  endpoint: string,
+  params?: Record<string, any>
+): Promise<T> {
+  const url = new URL(endpoint);
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        url.searchParams.append(key, String(value));
+      }
+    });
+  }
 
-export async function searchTags(query: string): Promise<Tag[]> {
-  const url = getUrl("/wp-json/wp/v2/tags", {
-    search: query,
-    per_page: 100,
+  const response = await fetch(url.toString(), {
+    next: { revalidate: 3600 }, // Revalidate every hour
   });
-  return wordpressFetch<Tag[]>(url);
-}
 
-export async function searchAuthors(query: string): Promise<Author[]> {
-  const url = getUrl("/wp-json/wp/v2/users", {
-    search: query,
-    per_page: 100,
-  });
-  return wordpressFetch<Author[]>(url);
+  if (!response.ok) {
+    throw new WordPressAPIError(
+      `WordPress API request failed: ${response.statusText}`,
+      response.status,
+      url.toString()
+    );
+  }
+
+  return response.json();
 }
 
 export { WordPressAPIError };

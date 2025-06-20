@@ -5,10 +5,11 @@ import { Inter as FontSans } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { MobileNav } from "@/components/nav/mobile-nav";
+import { DynamicNav } from "@/components/nav/dynamic-nav";
 import { Analytics } from "@vercel/analytics/react";
 import { Button } from "@/components/ui/button";
 
-import { mainMenu, contentMenu } from "@/menu.config";
+import { contentMenu } from "@/menu.config";
 import { siteConfig } from "@/site.config";
 import { cn } from "@/lib/utils";
 
@@ -28,8 +29,8 @@ const font = FontSans({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'),
   title: {
-    default: process.env.NEXT_PUBLIC_SITE_NAME || 'My Website',
-    template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME || 'My Website'}`
+    default: process.env.NEXT_PUBLIC_SITE_NAME || 'Jimowers',
+    template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME || 'Jimowers'}`
   },
   description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'A WordPress site built with Next.js',
   robots: {
@@ -73,6 +74,12 @@ export default function RootLayout({
   );
 }
 
+interface NavProps {
+  className?: string;
+  children?: React.ReactNode;
+  id?: string;
+}
+
 const Nav = ({ className, children, id }: NavProps) => {
   return (
     <nav
@@ -99,15 +106,7 @@ const Nav = ({ className, children, id }: NavProps) => {
         </Link>
         {children}
         <div className="flex items-center gap-2">
-          <div className="mx-2 hidden md:flex">
-            {Object.entries(mainMenu).map(([key, href]) => (
-              <Button key={href} asChild variant="ghost" size="sm">
-                <Link href={href}>
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </Link>
-              </Button>
-            ))}
-          </div>
+          <DynamicNav />
           <Button asChild className="hidden sm:flex">
             <Link href="https://github.com/9d8dev/next-wp">Get Started</Link>
           </Button>
@@ -140,15 +139,7 @@ const Footer = () => {
           </div>
           <div className="flex flex-col gap-2 text-sm">
             <h4 className="font-medium text-base">Website</h4>
-            {Object.entries(mainMenu).map(([key, href]) => (
-              <Link
-                className="hover:underline underline-offset-4"
-                key={href}
-                href={href}
-              >
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </Link>
-            ))}
+            <DynamicNav />
           </div>
           <div className="flex flex-col gap-2 text-sm">
             <h4 className="font-medium text-base">Blog</h4>
