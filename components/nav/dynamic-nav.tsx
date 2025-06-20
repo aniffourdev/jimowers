@@ -80,7 +80,7 @@ function MenuItem({ item }: { item: MenuItem }) {
           {item.label}
           <ChevronDown className="h-4 w-4" />
         </Button>
-        {isOpen && (
+        {isOpen && item.childItems?.nodes && (
           <div
             className="absolute top-full left-0 mt-1 w-48 bg-background border rounded-md shadow-lg z-50"
             onMouseEnter={() => setIsOpen(true)}
