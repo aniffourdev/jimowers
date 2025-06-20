@@ -61,7 +61,10 @@ export function DynamicNav() {
 }
 
 function MenuItem({ item }: { item: MenuItem }) {
-  const hasChildren = item.childItems?.nodes.length > 0;
+  const hasChildren =
+    item.childItems &&
+    item.childItems.nodes &&
+    item.childItems.nodes.length > 0;
   const [isOpen, setIsOpen] = useState(false);
 
   if (hasChildren) {
