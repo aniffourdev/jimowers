@@ -259,6 +259,27 @@ export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia> {
   return wordpressFetch<FeaturedMedia>(`${REST_API_URL}/media/${id}`);
 }
 
+export async function searchCategories(query: string): Promise<Category[]> {
+  return wordpressFetch<Category[]>(`${REST_API_URL}/categories`, {
+    search: query,
+    per_page: 100,
+  });
+}
+
+export async function searchTags(query: string): Promise<Tag[]> {
+  return wordpressFetch<Tag[]>(`${REST_API_URL}/tags`, {
+    search: query,
+    per_page: 100,
+  });
+}
+
+export async function searchAuthors(query: string): Promise<Author[]> {
+  return wordpressFetch<Author[]>(`${REST_API_URL}/users`, {
+    search: query,
+    per_page: 100,
+  });
+}
+
 async function wordpressFetch<T>(
   endpoint: string,
   params?: Record<string, any>
