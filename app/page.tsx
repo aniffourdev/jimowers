@@ -1,178 +1,309 @@
 // Craft Imports
 import { Section, Container, Prose } from "@/components/craft";
-import { WordPressIcon } from "@/components/icons/wordpress";
 import { PostCard } from "@/components/posts/post-card";
-import { getAllCategories, getPostsByCategory } from "@/lib/wordpress";
-import { Balancer } from "@/components/ui/balancer";
-
-// Next.js Imports
-import type { Metadata } from "next";
+import PillarPostCard from "@/components/posts/pillar-post-card";
+import {
+  getAllCategories,
+  getAllAuthors,
+  getAllPosts,
+  getPostsByCategory,
+  getAuthorById,
+} from "@/lib/wordpress";
+import { decodeHtmlEntities } from "@/lib/utils";
 import Link from "next/link";
-import { NextJsIcon } from "@/components/icons/nextjs";
-import { Pen, File, User, Tag, Diamond, Folder } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import Image from "next/image";
 
-export const metadata: Metadata = {
-  title: "Home",
-  description: "Welcome to our blog",
-};
+// Helper to fetch only pillar posts
+async function getPillarPosts() {
+  // Use the integer term ID for pillar (13)
+  return await getAllPosts({ content_type: 13 });
+}
 
-// This page is using the craft.tsx component and design system
+// SVG for ruler/mower illustration
+const RulerSVG = () => (
+  <svg
+    width="80"
+    height="40"
+    viewBox="0 0 80 40"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect x="5" y="15" width="70" height="10" rx="3" fill="#14b8a6" />
+    <rect x="10" y="18" width="2" height="4" rx="1" fill="#fff" />
+    <rect x="18" y="18" width="2" height="4" rx="1" fill="#fff" />
+    <rect x="26" y="18" width="2" height="4" rx="1" fill="#fff" />
+    <rect x="34" y="18" width="2" height="4" rx="1" fill="#fff" />
+    <rect x="42" y="18" width="2" height="4" rx="1" fill="#fff" />
+    <rect x="50" y="18" width="2" height="4" rx="1" fill="#fff" />
+    <rect x="58" y="18" width="2" height="4" rx="1" fill="#fff" />
+    <rect x="66" y="18" width="2" height="4" rx="1" fill="#fff" />
+    <circle cx="75" cy="20" r="5" fill="#0f766e" />
+    <rect x="72" y="17" width="6" height="6" rx="3" fill="#fff" />
+  </svg>
+);
+
 export default async function Home() {
-  // Get all categories
+  // Fetch data
   const categories = await getAllCategories();
+  const authors = await getAllAuthors();
+  const posts = await getAllPosts({});
+  const pillarPosts = await getPillarPosts();
+
+  // Fetch author with id 2 for testimonial
+  const testimonialAuthor = await getAuthorById(2);
+
+  // 1. Hero Section
+  const hero = (
+    <Section className="py-12 md:py-20 text-center bg-teal-50 dark:bg-zinc-900">
+      <Container>
+        <h1 className="text-4xl md:text-5xl font-black mb-4">
+          Your Ultimate Guide to Lawn Mowers and Eco-Friendly Lawn Care
+        </h1>
+        <p className="text-lg text-muted-foreground mb-8">
+          Expert reviews, maintenance tips, and eco-friendly guides from trusted
+          authors.
+        </p>
+        <div className="flex flex-col md:flex-row gap-4 justify-center mb-8">
+          <Link
+            href="/category/lawn-mowers"
+            className="px-6 py-3 rounded border font-semibold hover:bg-teal-50 transition"
+          >
+            Explore Lawn Mowers
+          </Link>
+          <Link
+            href="/buying-guides"
+            className="px-6 py-3 rounded border font-semibold hover:bg-teal-50 transition"
+          >
+            Read Our Buying Guides
+          </Link>
+          <Link
+            href="/authors"
+            className="px-6 py-3 rounded border font-semibold hover:bg-teal-50 transition"
+          >
+            Meet Our Experts
+          </Link>
+        </div>
+      </Container>
+    </Section>
+  );
+
+  const pillarGrid = (
+    <Section className="py-8">
+      <Container>
+        <h2 className="text-3xl font-black mb-6 text-center underline underline-offset-4 decoration-teal-200 ring-offset-black">
+          Explore Our Main Topics
+        </h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {pillarPosts.map((post: any) => (
+            <PillarPostCard key={post.id} post={post} />
+          ))}
+        </div>
+      </Container>
+    </Section>
+  );
+
+  // Lawn Mower Size Finder Tool Section
+  const sizeFinderSection = (
+    <Section className="max-w-6xl mx-auto py-4 px-6 ">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg flex flex-col md:flex-row items-center gap-8 p-8 border dark:border-zinc-800">
+        <div className="flex-1 flex flex-col items-start justify-center">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-2xl">📏</span>
+            <h2 className="text-2xl font-bold">Lawn Mower Size Finder Tool</h2>
+          </div>
+          <p className="text-muted-foreground mb-4">
+            Not sure what size lawn mower you need? Use our free Lawn Mower Size
+            Finder to get personalized recommendations based on your lawn size,
+            terrain, and mowing habits. Whether you have a small yard or acres
+            of grass, this tool helps you choose the perfect mower with
+            confidence.
+          </p>
+          <Link href="/lawn-mower-size-finder">
+            <button className="bg-gradient-to-r from-teal-500 to-teal-700 hover:from-teal-600 hover:to-teal-800 text-white font-bold px-6 py-3 rounded-full shadow transition mb-2">
+              🔍 Find Your Mower Size
+            </button>
+          </Link>
+          <span className="text-xs text-muted-foreground mb-2">
+            Takes less than 30 seconds to get your result.
+          </span>
+          <div className="mt-4 flex items-center gap-0.5">
+            <span className="text-yellow-400 text-lg">★</span>
+            <span className="text-yellow-400 text-lg">★</span>
+            <span className="text-yellow-400 text-lg">★</span>
+            <span className="text-yellow-400 text-lg">★</span>
+            <span className="text-yellow-400 text-lg">★</span>
+            <span className="text-xs text-muted-foreground ml-2">
+              “This tool helped me find the right mower for my backyard in
+              seconds!”
+            </span>
+          </div>
+          {/* Created by author */}
+          {testimonialAuthor && (
+            <div className="flex items-center gap-2 mt-3">
+              {testimonialAuthor.avatar_urls?.[48] && (
+                <Image
+                  src={testimonialAuthor.avatar_urls[48]}
+                  alt={testimonialAuthor.name}
+                  width={32}
+                  height={32}
+                  className="rounded-full border"
+                />
+              )}
+              <span className="text-xs text-muted-foreground">
+                Created by:{" "}
+                <Link
+                  href={`/${testimonialAuthor.slug}`}
+                  className="font-semibold duration-300 transition-all hover:text-teal-500"
+                >
+                  {testimonialAuthor.name}
+                </Link>
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="flex-shrink-0">
+          <RulerSVG />
+        </div>
+      </div>
+    </Section>
+  );
+
+  // 3. Latest from Each Category (show 3 latest posts per main category)
+  const clusterSections = await Promise.all(
+    categories.slice(0, 4).map(async (cat) => {
+      const catPosts = await getPostsByCategory(cat.id);
+      return (
+        <Section key={cat.id} className="py-8">
+          <Container>
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Link href={`/${cat.slug}`}>{decodeHtmlEntities(cat.name)}</Link>
+            </h2>
+            <div className="grid md:grid-cols-3 gap-4">
+              {catPosts.slice(0, 3).map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+          </Container>
+        </Section>
+      );
+    })
+  );
+
+  // 4. Author Spotlight (3 creative authors)
+  const spotlightAuthors = authors.slice(0, 3).map((author, i) => ({
+    ...author,
+    expertise: [
+      "Electric Lawn Mower Expert",
+      "Eco-Friendly Lawn Specialist",
+      "Maintenance Guru",
+    ][i % 3],
+    bio:
+      author.description || "Trusted contributor to our lawn care community.",
+  }));
+  const authorSpotlight = (
+    <Section className="py-8">
+      <Container>
+        <h2 className="text-xl font-bold mb-4">Author Spotlight</h2>
+        <div className="grid md:grid-cols-3 gap-4">
+          {spotlightAuthors.map((author) => (
+            <Link
+              key={author.id}
+              href={`/${author.slug}`}
+              className="border rounded-lg p-5 flex flex-col items-center hover:shadow-md transition"
+            >
+              {author.avatar_urls?.[96] && (
+                <Image
+                  src={author.avatar_urls[96]}
+                  alt={author.name}
+                  width={64}
+                  height={64}
+                  className="rounded-full mb-2"
+                />
+              )}
+              <span className="font-semibold text-lg mb-1">{author.name}</span>
+              <span className="text-xs text-muted-foreground mb-1">
+                {author.expertise}
+              </span>
+              <span className="text-sm text-muted-foreground text-center">
+                {author.bio}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </Container>
+    </Section>
+  );
+
+  // 5. Top Resources / Evergreen Guides (3 creative posts)
+  const evergreenPosts = posts.slice(0, 3);
+  const evergreenGuides = (
+    <Section className="py-8">
+      <Container>
+        <h2 className="text-xl font-bold mb-4">
+          Top Resources / Evergreen Guides
+        </h2>
+        <ul className="list-disc pl-6 space-y-2">
+          {evergreenPosts.map((post) => (
+            <li key={post.id}>
+              <Link
+                href={`/${post.slug}`}
+                className="font-semibold hover:underline"
+              >
+                {decodeHtmlEntities(post.title.rendered)}
+              </Link>
+              <span className="block text-muted-foreground text-sm">
+                {decodeHtmlEntities(
+                  post.excerpt?.rendered?.replace(/<[^>]+>/g, "") || ""
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </Container>
+    </Section>
+  );
+
+  // 7. Email opt-in/newsletter
+  const newsletterSection = (
+    <Section className="py-8">
+      <Container>
+        <div className="max-w-lg mx-auto bg-teal-50 dark:bg-zinc-800 rounded-lg p-6 text-center">
+          <h3 className="text-lg font-bold mb-2">
+            Download Our Free Lawn Mower Maintenance Checklist
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            Subscribe to get expert tips, guides, and our exclusive checklist
+            delivered to your inbox.
+          </p>
+          <form className="flex flex-col md:flex-row gap-2 justify-center">
+            <Input
+              type="email"
+              placeholder="Your email address"
+              required
+              className="flex-1"
+            />
+            <button
+              type="submit"
+              className="px-6 py-2 rounded bg-teal-700 text-white font-semibold hover:bg-teal-800 transition"
+            >
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </Container>
+    </Section>
+  );
 
   return (
     <main>
-      {categories.map(async (category) => {
-        // Get posts for this category
-        const posts = await getPostsByCategory(category.id);
-
-        return (
-          <Section key={category.id}>
-            <Container>
-              <Prose>
-                <h2>{category.name}</h2>
-                {category.description && (
-                  <p className="text-muted-foreground">{category.description}</p>
-                )}
-              </Prose>
-
-              <div className="grid md:grid-cols-3 gap-4 mt-8">
-                {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-              </div>
-            </Container>
-          </Section>
-        );
-      })}
+      {hero}
+      {pillarGrid}
+      {sizeFinderSection}
+      {clusterSections}
+      {authorSpotlight}
+      {/* {evergreenGuides} */}
+      {newsletterSection}
     </main>
   );
 }
-
-// This is just some example TSX
-const ToDelete = () => {
-  return (
-    <main className="space-y-6">
-      <Prose>
-        <h1>
-          <Balancer>Headless WordPress built with the Next.js</Balancer>
-        </h1>
-
-        <p>
-          This is <a href="https://github.com/9d8dev/next-wp">next-wp</a>,
-          created as a way to build WordPress sites with Next.js at rapid speed.
-          This starter is designed with{" "}
-          <a href="https://ui.shadcn.com">shadcn/ui</a>,{" "}
-          <a href="https://craft-ds.com">craft-ds</a>, and Tailwind CSS. Use{" "}
-          <a href="https://components.work">brijr/components</a> to build your
-          site with prebuilt components. The data fetching and typesafety is
-          handled in <code>lib/wordpress.ts</code> and{" "}
-          <code>lib/wordpress.d.ts</code>.
-        </p>
-      </Prose>
-
-      <div className="flex justify-between items-center gap-4">
-        {/* Vercel Clone Starter */}
-        <div className="flex items-center gap-3">
-          <a
-            className="h-auto block"
-            href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2F9d8dev%2Fnext-wp&env=WORDPRESS_URL,WORDPRESS_HOSTNAME&envDescription=Add%20WordPress%20URL%20with%20Rest%20API%20enabled%20(ie.%20https%3A%2F%2Fwp.example.com)%20abd%20the%20hostname%20for%20Image%20rendering%20in%20Next%20JS%20(ie.%20wp.example.com)&project-name=next-wp&repository-name=next-wp&demo-title=Next%20JS%20and%20WordPress%20Starter&demo-url=https%3A%2F%2Fwp.9d8.dev"
-          >
-            {/* eslint-disable-next-line */}
-            <img
-              className="not-prose my-4"
-              src="https://vercel.com/button"
-              alt="Deploy with Vercel"
-              width={105}
-              height={32.62}
-            />
-          </a>
-          <p className="!text-sm sr-only sm:not-sr-only text-muted-foreground">
-            Deploy with Vercel in seconds.
-          </p>
-        </div>
-
-        <div className="flex gap-2 items-center">
-          <WordPressIcon className="text-foreground" width={32} height={32} />
-          <NextJsIcon className="text-foreground" width={32} height={32} />
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-4 mt-6">
-        <Link
-          className="border h-48 bg-accent/50 rounded-lg p-4 flex flex-col justify-between hover:scale-[1.02] transition-all"
-          href="/posts"
-        >
-          <Pen size={32} />
-          <span>
-            Posts{" "}
-            <span className="block text-sm text-muted-foreground">
-              All posts from your WordPress
-            </span>
-          </span>
-        </Link>
-        <Link
-          className="border h-48 bg-accent/50 rounded-lg p-4 flex flex-col justify-between hover:scale-[1.02] transition-all"
-          href="/pages"
-        >
-          <File size={32} />
-          <span>
-            Pages{" "}
-            <span className="block text-sm text-muted-foreground">
-              Custom pages from your WordPress
-            </span>
-          </span>
-        </Link>
-        <Link
-          className="border h-48 bg-accent/50 rounded-lg p-4 flex flex-col justify-between hover:scale-[1.02] transition-all"
-          href="/posts/authors"
-        >
-          <User size={32} />
-          <span>
-            Authors{" "}
-            <span className="block text-sm text-muted-foreground">
-              List of the authors from your WordPress
-            </span>
-          </span>
-        </Link>
-        <Link
-          className="border h-48 bg-accent/50 rounded-lg p-4 flex flex-col justify-between hover:scale-[1.02] transition-all"
-          href="/posts/tags"
-        >
-          <Tag size={32} />
-          <span>
-            Tags{" "}
-            <span className="block text-sm text-muted-foreground">
-              Content by tags from your WordPress
-            </span>
-          </span>
-        </Link>
-        <Link
-          className="border h-48 bg-accent/50 rounded-lg p-4 flex flex-col justify-between hover:scale-[1.02] transition-all"
-          href="/posts/categories"
-        >
-          <Diamond size={32} />
-          <span>
-            Categories{" "}
-            <span className="block text-sm text-muted-foreground">
-              Categories from your WordPress
-            </span>
-          </span>
-        </Link>
-        <a
-          className="border h-48 bg-accent/50 rounded-lg p-4 flex flex-col justify-between hover:scale-[1.02] transition-all"
-          href="https://github.com/9d8dev/next-wp/blob/main/README.md"
-        >
-          <Folder size={32} />
-          <span>
-            Documentation{" "}
-            <span className="block text-sm text-muted-foreground">
-              How to use `next-wp`
-            </span>
-          </span>
-        </a>
-      </div>
-    </main>
-  );
-};

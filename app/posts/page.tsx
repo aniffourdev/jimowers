@@ -1,10 +1,8 @@
 import {
   getAllPosts,
   getAllAuthors,
-  getAllTags,
   getAllCategories,
   searchAuthors,
-  searchTags,
   searchCategories,
 } from "@/lib/wordpress";
 
@@ -37,20 +35,18 @@ export default async function Page({
 }: {
   searchParams: Promise<{
     author?: string;
-    tag?: string;
     category?: string;
     page?: string;
     search?: string;
   }>;
 }) {
   const params = await searchParams;
-  const { author, tag, category, page: pageParam, search } = params;
+  const { author, category, page: pageParam, search } = params;
 
   // Fetch data based on search parameters
-  const [posts, authors, tags, categories] = await Promise.all([
-    getAllPosts({ author, tag, category, search }),
+  const [posts, authors, categories] = await Promise.all([
+    getAllPosts({ author, category, search }),
     search ? searchAuthors(search) : getAllAuthors(),
-    search ? searchTags(search) : getAllTags(),
     search ? searchCategories(search) : getAllCategories(),
   ]);
 
@@ -69,7 +65,6 @@ export default async function Page({
     if (newPage > 1) params.set("page", newPage.toString());
     if (category) params.set("category", category);
     if (author) params.set("author", author);
-    if (tag) params.set("tag", tag);
     if (search) params.set("search", search);
     return `/posts${params.toString() ? `?${params.toString()}` : ""}`;
   };
@@ -91,10 +86,8 @@ export default async function Page({
 
             <FilterPosts
               authors={authors}
-              tags={tags}
               categories={categories}
               selectedAuthor={author}
-              selectedTag={tag}
               selectedCategory={category}
             />
           </div>

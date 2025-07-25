@@ -92,7 +92,6 @@ export interface Post extends WPEntity {
     | "video"
     | "audio";
   categories: number[];
-  tags: number[];
   meta: Record<string, unknown>;
   _embedded?: {
     'wp:featuredmedia'?: Array<{
@@ -133,10 +132,6 @@ export interface Category extends Taxonomy {
  parent: number;
 }
 
-export interface Tag extends Taxonomy {
-  taxonomy: "post_tag";
-}
-
 export interface Author {
   social_links: never[];
   id: number;
@@ -147,6 +142,10 @@ export interface Author {
   slug: string;
   avatar_urls: Record<string, string>;
   meta: Record<string, unknown>;
+  linkedin?: string;
+  facebook?: string;
+  x?: string;
+  sameAs?: string[];
 }
 
 // Block types

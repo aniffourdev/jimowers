@@ -1,33 +1,69 @@
-'use client';
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getMenu, type Menu, type MenuItem } from "@/lib/wordpress";
+import {
+  getMenu,
+  type Menu,
+  type MenuItem,
+  getMenuByLocation,
+} from "@/lib/wordpress";
+import { decodeHtmlEntities } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Search as SearchIcon, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { PostCardClient } from "@/components/posts/post-card-client";
+import { useRouter } from "next/navigation";
 
 export function DynamicNav() {
   const [menu, setMenu] = useState<Menu | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchMenu() {
       try {
-        const menuData = await getMenu();
-        console.log('Fetched menu:', menuData);
+        const menuData = await getMenuByLocation("menu/main");
         setMenu(menuData);
       } catch (err) {
-        console.error('Error fetching menu:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch menu');
+        setError(err instanceof Error ? err.message : "Failed to fetch menu");
       } finally {
         setIsLoading(false);
       }
     }
-
     fetchMenu();
   }, []);
+
+  // Live search effect
+  useEffect(() => {
+    if (!showSearch) return;
+    if (!searchTerm) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      return;
+    }
+    setSearchLoading(true);
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/search?term=${encodeURIComponent(searchTerm)}`
+        );
+        const data = await res.json();
+        setSearchResults(data.posts || []);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 350);
+    return () => clearTimeout(timeout);
+  }, [searchTerm, showSearch]);
 
   if (isLoading) {
     return (
@@ -50,13 +86,78 @@ export function DynamicNav() {
   }
 
   return (
-    <div className="mx-2 hidden md:flex">
-      {menu.menuItems.nodes
-        .filter((item) => !item.parentId)
-        .map((item) => (
-          <MenuItem key={item.id} item={item} />
-        ))}
-    </div>
+    <>
+      <div className="mx-2 hidden md:flex items-center gap-1">
+        {menu.menuItems.nodes
+          .filter((item) => !item.parentId)
+          .map((item) => (
+            <MenuItem key={item.id} item={item} />
+          ))}
+        {/* Search Icon */}
+        <button
+          className="ml-2 p-2 rounded-full hover:bg-accent transition-colors"
+          aria-label="Search"
+          onClick={() => setShowSearch(true)}
+        >
+          <SearchIcon className="w-5 h-5" />
+        </button>
+      </div>
+      {/* Search Overlay */}
+      {showSearch && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center bg-white/95 dark:bg-black/95 backdrop-blur-sm transition-all">
+          <div className="w-full max-w-xl mx-auto mt-16 flex flex-col items-center">
+            <Input
+              autoFocus
+              type="text"
+              placeholder="Search articles..."
+              className="w-full text-lg px-6 py-4 mb-6 border border-gray-300 rounded-lg shadow"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchLoading && (
+              <Loader2 className="animate-spin text-muted-foreground mb-4" />
+            )}
+          </div>
+          {/* Results */}
+          <div className="w-full flex-1 flex flex-col items-center overflow-y-auto">
+            {searchTerm && !searchLoading && searchResults.length === 0 && (
+              <div className="text-muted-foreground mt-8">
+                No articles found.
+              </div>
+            )}
+            <div className="w-full max-w-6xl grid md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 pb-16">
+              {searchResults.map((post) => (
+                <div
+                  key={post.id}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowSearch(false);
+                    setSearchTerm("");
+                    setSearchResults([]);
+                    router.push(`/${post.slug}`);
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <PostCardClient post={post} />
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Close overlay */}
+          <button
+            className="absolute top-6 right-8 text-2xl text-muted-foreground hover:text-foreground"
+            onClick={() => {
+              setShowSearch(false);
+              setSearchTerm("");
+              setSearchResults([]);
+            }}
+            aria-label="Close search"
+          >
+            ×
+          </button>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -77,7 +178,7 @@ function MenuItem({ item }: { item: MenuItem }) {
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
         >
-          {item.label}
+          {decodeHtmlEntities(item.label)}
           <ChevronDown className="h-4 w-4" />
         </Button>
         {isOpen && item.childItems?.nodes && (
@@ -93,7 +194,7 @@ function MenuItem({ item }: { item: MenuItem }) {
                   href={child.uri}
                   className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
                 >
-                  {child.label}
+                  {decodeHtmlEntities(child.label)}
                 </Link>
               ))}
             </div>
@@ -105,9 +206,7 @@ function MenuItem({ item }: { item: MenuItem }) {
 
   return (
     <Button asChild variant="ghost" size="sm">
-      <Link href={item.uri}>
-        {item.label}
-      </Link>
+      <Link href={item.uri}>{item.label}</Link>
     </Button>
   );
-} 
+}

@@ -14,12 +14,13 @@ import { siteConfig } from "@/site.config";
 import { cn } from "@/lib/utils";
 
 import Balancer from "react-wrap-balancer";
-import Logo from "@/public/logo.svg";
+import Logo from "@/public/bkmower.svg";
 import Image from "next/image";
 import Link from "next/link";
 
 import type { Metadata } from "next";
 import { generateWebSiteSchema } from "@/lib/schema";
+import FooterNav from "@/components/nav/footer-nav";
 
 const font = FontSans({
   subsets: ["latin"],
@@ -56,7 +57,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <head>
+        <meta charSet="utf-8" />
+      </head>
       <body className={cn("min-h-screen font-sans antialiased", font.variable)}>
         <ThemeProvider
           attribute="class"
@@ -88,7 +91,7 @@ const Nav = ({ className, children, id }: NavProps) => {
     >
       <div
         id="nav-container"
-        className="max-w-5xl mx-auto py-4 px-6 sm:px-8 flex justify-between items-center"
+        className="max-w-6xl mx-auto py-4 px-6 sm:px-8 flex justify-between items-center"
       >
         <Link
           className="hover:opacity-75 transition-all flex gap-4 items-center"
@@ -99,17 +102,14 @@ const Nav = ({ className, children, id }: NavProps) => {
             alt="Logo"
             loading="eager"
             className="dark:invert"
-            width={42}
+            width={140}
             height={26.44}
           ></Image>
-          <h2 className="text-sm">{siteConfig.site_name}</h2>
+          {/* <h2 className="text-sm">{siteConfig.site_name}</h2> */}
         </Link>
         {children}
         <div className="flex items-center gap-2">
           <DynamicNav />
-          <Button asChild className="hidden sm:flex">
-            <Link href="https://github.com/9d8dev/next-wp">Get Started</Link>
-          </Button>
           <MobileNav />
         </div>
       </div>
@@ -128,8 +128,8 @@ const Footer = () => {
               <Image
                 src={Logo}
                 alt="Logo"
-                className="dark:invert"
-                width={42}
+                className="dark:invert -mb-3"
+                width={140}
                 height={26.44}
               ></Image>
             </Link>
@@ -138,11 +138,11 @@ const Footer = () => {
             </p>
           </div>
           <div className="flex flex-col gap-2 text-sm">
-            <h4 className="font-medium text-base">Website</h4>
-            <DynamicNav />
+            <h4 className="font-medium text-base">Quick Links</h4>
+            <FooterNav />
           </div>
           <div className="flex flex-col gap-2 text-sm">
-            <h4 className="font-medium text-base">Blog</h4>
+            <h4 className="font-medium text-base">Unself Links</h4>
             {Object.entries(contentMenu).map(([key, href]) => (
               <Link
                 className="hover:underline underline-offset-4"
@@ -158,7 +158,7 @@ const Footer = () => {
           <ThemeToggle />
           <p className="text-muted-foreground">
             &copy; <Link href="/" className="font-semibold">{siteConfig.site_name}</Link>. All rights reserved.
-            2025-present.
+             {new Date().getFullYear()} -present.
           </p>
         </Container>
       </Section>

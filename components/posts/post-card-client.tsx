@@ -1,23 +1,20 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
-
 import { Post } from "@/lib/wordpress.d";
-import { cn } from "@/lib/utils";
-
-import { getAuthorById } from "@/lib/wordpress";
-
-import { formatDate, decodeHtmlEntities } from "@/lib/utils";
+import { cn, formatDate, decodeHtmlEntities } from "@/lib/utils";
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "");
+  return html.replace(/<[^>]*>/g, '');
 }
 
-export async function PostCard({ post }: { post: Post }) {
-  const author = post.author ? await getAuthorById(post.author) : null;
-  const date = formatDate(post.date);
-  // Use embedded category if available
+export function PostCardClient({ post }: { post: Post }) {
+  // Type _embedded as any to avoid linter error for unknown keys
   const _embedded = post._embedded as any;
+  const date = formatDate(post.date);
   const category = _embedded?.['wp:term']?.[0]?.[0] || null;
+  const featuredImage = _embedded?.['wp:featuredmedia']?.[0]?.source_url;
+  const author = _embedded?.author?.[0] || null;
 
   const contentText = post.content?.rendered
     ? decodeHtmlEntities(stripHtml(post.content.rendered)).slice(0, 120)
@@ -26,9 +23,9 @@ export async function PostCard({ post }: { post: Post }) {
   return (
     <article className="bg-white dark:bg-zinc-900 shadow dark:shadow-lg p-0 overflow-hidden border dark:border-zinc-800 flex flex-col transition-colors duration-200">
       <div className="relative">
-        {post._embedded?.["wp:featuredmedia"]?.[0]?.source_url && (
+        {featuredImage && (
           <Image
-            src={post._embedded["wp:featuredmedia"][0].source_url}
+            src={featuredImage}
             alt={post.title.rendered}
             width={600}
             height={300}
@@ -37,16 +34,15 @@ export async function PostCard({ post }: { post: Post }) {
           />
         )}
         {author && (
-          <Link
-            href={`/${author.slug}`}
+          <span
             className="absolute bottom-0 bg-teal-700 dark:bg-teal-600 text-white px-3 py-1.5 rounded-tr-lg text-sm font-semibold shadow-md z-10"
             style={{ textShadow: "0 1px 2px rgba(0,0,0,0.15)" }}
           >
             By {author.name}
-          </Link>
+          </span>
         )}
       </div>
-      <div className="flex flex-col gap-2 px-6 pb-6 pt-4">
+      <div className="px-6 pb-6 pt-4 flex flex-col gap-2">
         <Link
           href={`/${post.slug}`}
           className="hover:text-teal-600 dark:hover:text-teal-400 duration-200 transition-colors"
@@ -68,4 +64,4 @@ export async function PostCard({ post }: { post: Post }) {
       </div>
     </article>
   );
-}
+} 

@@ -1,15 +1,12 @@
-import { Post, Category, Tag, Author, Page } from "./wordpress.d";
-import { getFeaturedMediaById, getTagById, getCategoryById } from "./wordpress";
+import { Post, Category, Author, Page } from "./wordpress.d";
+import { getFeaturedMediaById, getCategoryById } from "./wordpress";
 import { siteConfig } from '@/site.config'
 
 export async function generatePostSchema(post: Post, author: Author) {
   const featuredMedia = post.featured_media ? await getFeaturedMediaById(post.featured_media) : null;
   const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/${post.slug}`;
-  
-  // Fetch tags and categories
-  const tags = await Promise.all(post.tags?.map(id => getTagById(id)) || []);
+  // Fetch categories only
   const categories = await Promise.all(post.categories?.map(id => getCategoryById(id)) || []);
-  
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -45,7 +42,6 @@ export async function generatePostSchema(post: Post, author: Author) {
     },
     "url": canonicalUrl,
     "wordCount": post.content.rendered.split(/\s+/).length,
-    "keywords": tags.map(tag => tag.name).join(", ") || "",
     "articleSection": categories.map(cat => cat.name).join(", ") || "",
     "inLanguage": "en-US",
     "isAccessibleForFree": true,
@@ -66,32 +62,6 @@ export function generateCategorySchema(category: Category) {
       "@type": "ItemList",
       "itemListElement": [],
       "numberOfItems": category.count
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": process.env.NEXT_PUBLIC_SITE_NAME,
-      "logo": {
-        "@type": "ImageObject",
-        "url": `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`
-      }
-    },
-    "inLanguage": "en-US"
-  };
-}
-
-export function generateTagSchema(tag: Tag) {
-  const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/${tag.slug}`;
-  
-  return {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": tag.name,
-    "description": tag.description,
-    "url": canonicalUrl,
-    "mainEntity": {
-      "@type": "ItemList",
-      "itemListElement": [],
-      "numberOfItems": tag.count
     },
     "publisher": {
       "@type": "Organization",

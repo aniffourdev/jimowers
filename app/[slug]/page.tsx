@@ -1,14 +1,14 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import { getPost, getCategory, getTag, getAuthor } from '@/lib/api'
+import { getPost, getCategory, getAuthor } from '@/lib/api'
 import { getAuthorById, getFeaturedMediaById } from '@/lib/wordpress'
-import { getPostBySlug, getPageBySlug, getCategoryBySlug, getTagBySlug, getAuthorBySlug } from "@/lib/wordpress";
-import { generateArticleSchema, generatePageSchema, generateCategorySchema, generateTagSchema, generateAuthorSchema } from "@/lib/schema";
+import { getPostBySlug, getPageBySlug, getCategoryBySlug, getAuthorBySlug } from "@/lib/wordpress";
+import { generateArticleSchema, generatePageSchema, generateCategorySchema, generateAuthorSchema } from "@/lib/schema";
 import PostContent from '@/components/PostContent'
 import PageContent from '@/components/PageContent'
 import CategoryContent from '@/components/CategoryContent'
-import TagContent from '@/components/TagContent'
 import AuthorContent from '@/components/AuthorContent'
+import { decodeHtmlEntities, stripHtmlTags } from "@/lib/utils";
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -21,7 +21,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPostBySlug(slug);
   const page = await getPageBySlug(slug);
   const category = await getCategoryBySlug(slug);
-  const tag = await getTagBySlug(slug);
   const author = await getAuthorBySlug(slug);
 
   if (post) {
@@ -31,13 +30,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     
     return {
       title: post.title.rendered,
-      description: post.excerpt.rendered,
+      description: stripHtmlTags(decodeHtmlEntities(post.excerpt.rendered)),
       alternates: {
         canonical: canonicalUrl,
       },
       openGraph: {
         title: post.title.rendered,
-        description: post.excerpt.rendered,
+        description: stripHtmlTags(decodeHtmlEntities(post.excerpt.rendered)),
         type: 'article',
         publishedTime: post.date,
         modifiedTime: post.modified,
@@ -47,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       twitter: {
         card: 'summary_large_image',
         title: post.title.rendered,
-        description: post.excerpt.rendered,
+        description: stripHtmlTags(decodeHtmlEntities(post.excerpt.rendered)),
       },
       other: {
         'schema-org': JSON.stringify(schema),
@@ -62,7 +61,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (page) {
     return {
       title: page.title.rendered,
-      description: page.excerpt.rendered,
+      description: stripHtmlTags(decodeHtmlEntities(page.excerpt.rendered)),
+      openGraph: {
+        title: page.title.rendered,
+        description: stripHtmlTags(decodeHtmlEntities(page.excerpt.rendered)),
+        type: 'website',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${page.slug}`,
+      },
+      twitter: {
+        card: 'summary',
+        title: page.title.rendered,
+        description: stripHtmlTags(decodeHtmlEntities(page.excerpt.rendered)),
+      },
       robots: {
         index: true,
         follow: true,
@@ -78,10 +88,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/${category.slug}`
     
     return {
-      title: `Category: ${category.name}`,
-      description: `Posts in category ${category.name}`,
+      title: decodeHtmlEntities(category.name),
+      description: `Posts in category ${decodeHtmlEntities(category.name)}`,
+      openGraph: {
+        title: decodeHtmlEntities(category.name),
+        description: `Posts in category ${decodeHtmlEntities(category.name)}`,
+        type: 'website',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${category.slug}`,
+      },
+      twitter: {
+        card: 'summary',
+        title: decodeHtmlEntities(category.name),
+        description: `Posts in category ${decodeHtmlEntities(category.name)}`,
+      },
       alternates: {
-        canonical: canonicalUrl,
+        canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/${category.slug}`,
       },
       robots: {
         index: true,
@@ -93,18 +114,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
-  if (tag || author) {
-    const schema = tag ? generateTagSchema(tag) : generateAuthorSchema(author)
-    const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/${tag ? tag.slug : author.slug}`
-    
+  if (author) {
+    const schema = generateAuthorSchema(author)
+    const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/${author.slug}`
     return {
-      title: tag ? `Tag: ${tag.name}` : `Author: ${author.name}`,
-      description: tag ? `Posts tagged with ${tag.name}` : `Posts by ${author.name}`,
+      title: decodeHtmlEntities(author.name),
+      description: `Posts by ${decodeHtmlEntities(author.name)}`,
+      openGraph: {
+        title: decodeHtmlEntities(author.name),
+        description: `Posts by ${decodeHtmlEntities(author.name)}`,
+        type: 'profile',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${author.slug}`,
+      },
+      twitter: {
+        card: 'summary',
+        title: decodeHtmlEntities(author.name),
+        description: `Posts by ${decodeHtmlEntities(author.name)}`,
+      },
       alternates: {
-        canonical: canonicalUrl,
+        canonical: `${process.env.NEXT_PUBLIC_SITE_URL}/${author.slug}`,
       },
       robots: {
-        index: false,
+        index: true,
         follow: true,
       },
       other: {
@@ -133,16 +164,16 @@ export default async function DynamicPage({ params }: Props) {
     return <PostContent post={post} />
   }
 
+  // Try to get page
+  const page = await getPageBySlug(slug)
+  if (page) {
+    return <PageContent page={page} />
+  }
+
   // Try to get category
   const category = await getCategory(slug)
   if (category) {
     return <CategoryContent category={category} />
-  }
-
-  // Try to get tag
-  const tag = await getTag(slug)
-  if (tag) {
-    return <TagContent tag={tag} />
   }
 
   // Try to get author

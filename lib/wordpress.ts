@@ -6,15 +6,15 @@ import querystring from "query-string";
 import type {
   Post,
   Category,
-  Tag,
   Page,
   Author,
   FeaturedMedia,
 } from "./wordpress.d";
+import { decodeHtmlEntities } from "./utils";
 
 // WordPress API Configuration
-const REST_API_URL = 'https://gvr.ltm.temporary.site/mower/wp-json/wp/v2';
-const GRAPHQL_URL = 'https://gvr.ltm.temporary.site/mower/graphql';
+const REST_API_URL = "https://jimowers.infy.uk/wp-json/wp/v2";
+const GRAPHQL_URL = "https://jimowers.infy.uk/graphql";
 
 // Menu Types
 export interface MenuItem {
@@ -79,106 +79,112 @@ const MENU_QUERY = `
 `;
 
 // Menu Functions
-export async function getMenu(): Promise<Menu | null> {
+export async function getMenu(): Promise<any | null> {
   try {
-    console.log('Fetching menu from:', GRAPHQL_URL);
-
-    const response = await fetch(GRAPHQL_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: MENU_QUERY,
-      }),
-      cache: 'no-store',
-    });
-
+    const response = await fetch(
+      "https://jimowers.infy.uk/wp-json/wp/v2/main-menu",
+      {
+        cache: "no-store",
+      }
+    );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
-    const json = await response.json();
-    // console.log('Menu Response:', json);
-
-    if (json.errors) {
-      console.error('GraphQL Errors:', json.errors);
-      return null;
+    const items = await response.json();
+    const WP_DOMAIN = "https://jimowers.infy.uk";
+    function cleanHref(href: string) {
+      if (!href) return href;
+      // Remove domain if present
+      if (href.startsWith(WP_DOMAIN)) {
+        href = href.replace(WP_DOMAIN, "");
+      }
+      // Remove /category/ prefix
+      if (href.startsWith("/category/")) {
+        href = href.replace("/category/", "/");
+      }
+      // Remove trailing slash (optional)
+      if (href.length > 1 && href.endsWith("/")) {
+        href = href.slice(0, -1);
+      }
+      return href;
     }
-
-    // Find the primary menu from the list of menus
-    let primaryMenu = json.data?.menus?.nodes?.find((menu: any) => 
-      menu.name.toLowerCase().includes('primary') || 
-      menu.name.toLowerCase().includes('main') ||
-      menu.name.toLowerCase().includes('header')
-    );
-
-    if (!primaryMenu) {
-      console.log('Available menus:', json.data?.menus?.nodes?.map((m: any) => m.name));
-      // If no primary menu found, use the first menu
-      primaryMenu = json.data?.menus?.nodes?.[0] || null;
+    function cleanMenuTree(nodes: any[]): any[] {
+      return nodes.map((item) => ({
+        ...item,
+        label: decodeHtmlEntities(item.name),
+        uri: cleanHref(item.href),
+        href: cleanHref(item.href),
+        childItems: item.children
+          ? { nodes: cleanMenuTree(item.children) }
+          : { nodes: [] },
+      }));
     }
-
-    if (primaryMenu && primaryMenu.menuItems && primaryMenu.menuItems.nodes) {
-      const cleanUri = (uri: string) => {
-        if (!uri) return "/";
-        if (uri.startsWith("/category/")) {
-          return uri.substring("/category".length);
-        }
-        if (uri.startsWith("/tag/")) {
-          return uri.substring("/tag".length);
-        }
-        return uri;
-      };
-
-      const processMenuItems = (items: MenuItem[]): MenuItem[] => {
-        return items.map((item) => ({
-          ...item,
-          uri: cleanUri(item.uri),
-          childItems:
-            item.childItems && item.childItems.nodes
-              ? { nodes: processMenuItems(item.childItems.nodes) }
-              : undefined,
-        }));
-      };
-
-      primaryMenu.menuItems.nodes = processMenuItems(
-        primaryMenu.menuItems.nodes
-      );
-    }
-
-    return primaryMenu;
+    return {
+      menuItems: {
+        nodes: cleanMenuTree(items),
+      },
+    };
   } catch (error) {
-    console.error('Error fetching menu:', error);
+    console.error("Error fetching menu:", error);
+    return null;
+  }
+}
+
+export async function getMenuByLocation(location: string): Promise<any | null> {
+  try {
+    const response = await fetch(
+      `https://jimowers.infy.uk/wp-json/wp/v2/${location}`,
+      {
+        cache: "no-store",
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const items = await response.json();
+    const WP_DOMAIN = "https://jimowers.infy.uk";
+    function cleanHref(href: string) {
+      if (!href) return href;
+      if (href.startsWith(WP_DOMAIN)) {
+        href = href.replace(WP_DOMAIN, "");
+      }
+      if (href.startsWith("/category/")) {
+        href = href.replace("/category/", "/");
+      }
+      if (href.length > 1 && href.endsWith("/")) {
+        href = href.slice(0, -1);
+      }
+      return href;
+    }
+    function cleanMenuTree(nodes: any[]): any[] {
+      return nodes.map((item) => ({
+        ...item,
+        label: decodeHtmlEntities(item.name),
+        uri: cleanHref(item.href),
+        href: cleanHref(item.href),
+        childItems: item.children
+          ? { nodes: cleanMenuTree(item.children) }
+          : { nodes: [] },
+      }));
+    }
+    return {
+      menuItems: {
+        nodes: cleanMenuTree(items),
+      },
+    };
+  } catch (error) {
+    console.error(`Error fetching menu for location ${location}:`, error);
     return null;
   }
 }
 
 // REST API Functions
-export async function getAllPosts(filterParams?: {
-  author?: string;
-  tag?: string;
-  category?: string;
-  search?: string;
-}): Promise<Post[]> {
+export async function getAllPosts(filterParams?: Record<string, any>): Promise<Post[]> {
   const query: Record<string, any> = {
     _embed: true,
     per_page: 100,
+    ...filterParams,
   };
-
-  if (filterParams?.search) {
-    query.search = filterParams.search;
-  }
-  if (filterParams?.author) {
-    query.author = filterParams.author;
-  }
-  if (filterParams?.tag) {
-    query.tags = filterParams.tag;
-  }
-  if (filterParams?.category) {
-    query.categories = filterParams.category;
-  }
-
   return wordpressFetch<Post[]>(`${REST_API_URL}/posts`, query);
 }
 
@@ -187,7 +193,10 @@ export async function getPostById(id: number): Promise<Post> {
 }
 
 export async function getPostBySlug(slug: string): Promise<Post> {
-  const response = await wordpressFetch<Post[]>(`${REST_API_URL}/posts`, { slug });
+  const response = await wordpressFetch<Post[]>(`${REST_API_URL}/posts`, {
+    slug,
+    _embed: true,
+  });
   return response[0];
 }
 
@@ -200,29 +209,18 @@ export async function getCategoryById(id: number): Promise<Category> {
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category> {
-  const response = await wordpressFetch<Category[]>(`${REST_API_URL}/categories`, { slug });
+  const response = await wordpressFetch<Category[]>(
+    `${REST_API_URL}/categories`,
+    { slug }
+  );
   return response[0];
 }
 
 export async function getPostsByCategory(categoryId: number): Promise<Post[]> {
-  return wordpressFetch<Post[]>(`${REST_API_URL}/posts`, { categories: categoryId });
-}
-
-export async function getPostsByTag(tagId: number): Promise<Post[]> {
-  return wordpressFetch<Post[]>(`${REST_API_URL}/posts`, { tags: tagId });
-}
-
-export async function getAllTags(): Promise<Tag[]> {
-  return wordpressFetch<Tag[]>(`${REST_API_URL}/tags`);
-}
-
-export async function getTagById(id: number): Promise<Tag> {
-  return wordpressFetch<Tag>(`${REST_API_URL}/tags/${id}`);
-}
-
-export async function getTagBySlug(slug: string): Promise<Tag> {
-  const response = await wordpressFetch<Tag[]>(`${REST_API_URL}/tags`, { slug });
-  return response[0];
+  return wordpressFetch<Post[]>(`${REST_API_URL}/posts`, {
+    categories: categoryId,
+    _embed: true,
+  });
 }
 
 export async function getAllPages(): Promise<Page[]> {
@@ -234,7 +232,9 @@ export async function getPageById(id: number): Promise<Page> {
 }
 
 export async function getPageBySlug(slug: string): Promise<Page> {
-  const response = await wordpressFetch<Page[]>(`${REST_API_URL}/pages`, { slug });
+  const response = await wordpressFetch<Page[]>(`${REST_API_URL}/pages`, {
+    slug,
+  });
   return response[0];
 }
 
@@ -247,12 +247,14 @@ export async function getAuthorById(id: number): Promise<Author> {
 }
 
 export async function getAuthorBySlug(slug: string): Promise<Author> {
-  const response = await wordpressFetch<Author[]>(`${REST_API_URL}/users`, { slug });
+  const response = await wordpressFetch<Author[]>(`${REST_API_URL}/users`, {
+    slug,
+  });
   return response[0];
 }
 
 export async function getPostsByAuthor(authorId: number): Promise<Post[]> {
-  return wordpressFetch<Post[]>(`${REST_API_URL}/posts`, { author: authorId });
+  return wordpressFetch<Post[]>(`${REST_API_URL}/posts`, { author: authorId, _embed: true });
 }
 
 export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia> {
@@ -261,13 +263,6 @@ export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia> {
 
 export async function searchCategories(query: string): Promise<Category[]> {
   return wordpressFetch<Category[]>(`${REST_API_URL}/categories`, {
-    search: query,
-    per_page: 100,
-  });
-}
-
-export async function searchTags(query: string): Promise<Tag[]> {
-  return wordpressFetch<Tag[]>(`${REST_API_URL}/tags`, {
     search: query,
     per_page: 100,
   });
@@ -292,20 +287,26 @@ async function wordpressFetch<T>(
       }
     });
   }
-
-  const response = await fetch(url.toString(), {
-    next: { revalidate: 3600 }, // Revalidate every hour
-  });
-
-  if (!response.ok) {
-    throw new WordPressAPIError(
-      `WordPress API request failed: ${response.statusText}`,
-      response.status,
-      url.toString()
-    );
+  try {
+    const response = await fetch(url.toString(), {
+      next: { revalidate: 3600 }, // Revalidate every hour
+    });
+    if (!response.ok) {
+      throw new WordPressAPIError(
+        `WordPress API request failed: ${response.statusText}`,
+        response.status,
+        url.toString()
+      );
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Failed to fetch from WordPress API:', url.toString(), error);
+    // Return empty array or null depending on expected type
+    if (endpoint.includes('/categories') || endpoint.includes('/posts') || endpoint.includes('/users')) {
+      return [] as T;
+    }
+    return null as T;
   }
-
-  return response.json();
 }
 
 export { WordPressAPIError };

@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation";
 
 // Utility Imports
 import { getMenu, type Menu, type MenuItem } from "@/lib/wordpress";
+import { getMenuByLocation } from "@/lib/wordpress";
 import { Menu as MenuIcon, ArrowRightSquare, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { decodeHtmlEntities } from "@/lib/utils";
 
 // Component Imports
 import { Button } from "@/components/ui/button";
@@ -31,7 +33,7 @@ export function MobileNav() {
   React.useEffect(() => {
     async function fetchMenu() {
       setIsLoading(true);
-      const menuData = await getMenu();
+      const menuData = await getMenuByLocation("menu/main");
       setMenu(menuData);
       setIsLoading(false);
     }
@@ -104,7 +106,7 @@ function MobileMenuItem({ item, onOpenChange }: MobileMenuItemProps) {
           className="flex items-center justify-between text-lg"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <span>{item.label}</span>
+          <span>{decodeHtmlEntities(item.label)}</span>
           <ChevronDown
             className={cn(
               "h-4 w-4 transition-transform",
@@ -129,7 +131,7 @@ function MobileMenuItem({ item, onOpenChange }: MobileMenuItemProps) {
 
   return (
     <MobileLink href={item.uri} onOpenChange={onOpenChange}>
-      {item.label}
+      {decodeHtmlEntities(item.label)}
     </MobileLink>
   );
 }

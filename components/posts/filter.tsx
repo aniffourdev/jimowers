@@ -9,13 +9,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"; // Ensure this is the correct import path
 import { Button } from "@/components/ui/button"; // Add this import for the Button component
+import { decodeHtmlEntities } from "@/lib/utils";
 
 interface Author {
-  id: number;
-  name: string;
-}
-
-interface Tag {
   id: number;
   name: string;
 }
@@ -27,19 +23,15 @@ interface Category {
 
 interface FilterPostsProps {
   authors: Author[];
-  tags: Tag[];
   categories: Category[];
   selectedAuthor?: string;
-  selectedTag?: string;
   selectedCategory?: string;
 }
 
 export function FilterPosts({
   authors,
-  tags,
   categories,
   selectedAuthor,
-  selectedTag,
   selectedCategory,
 }: FilterPostsProps) {
   const router = useRouter();
@@ -57,29 +49,11 @@ export function FilterPosts({
     router.push("/posts");
   };
 
-  const hasTags = tags.length > 0;
   const hasCategories = categories.length > 0;
   const hasAuthors = authors.length > 0;
 
   return (
-    <div className="grid md:grid-cols-[1fr_1fr_1fr_0.5fr] gap-2 my-4 !z-10">
-      <Select
-        value={selectedTag || "all"}
-        onValueChange={(value) => handleFilterChange("tag", value)}
-      >
-        <SelectTrigger disabled={!hasTags}>
-          {hasTags ? <SelectValue placeholder="All Tags" /> : "No tags found"}
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Tags</SelectItem>
-          {tags.map((tag) => (
-            <SelectItem key={tag.id} value={tag.id.toString()}>
-              {tag.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
+    <div className="grid md:grid-cols-[1fr_1fr_0.5fr] gap-2 my-4 !z-10">
       <Select
         value={selectedCategory || "all"}
         onValueChange={(value) => handleFilterChange("category", value)}
@@ -95,7 +69,7 @@ export function FilterPosts({
           <SelectItem value="all">All Categories</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category.id} value={category.id.toString()}>
-              {category.name}
+              {decodeHtmlEntities(category.name)}
             </SelectItem>
           ))}
         </SelectContent>
