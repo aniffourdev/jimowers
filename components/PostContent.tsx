@@ -45,6 +45,7 @@ function youtubeUrlToEmbed(url: string) {
 }
 
 function parseContentWithYouTube(content: string) {
+  let firstImageFound = false;
   return parse(content, {
     replace: (domNode: DOMNode) => {
       // Convert plain text YouTube URLs to iframes
@@ -112,36 +113,37 @@ function parseContentWithYouTube(content: string) {
           attribs.srcSet = attribs.srcset;
           delete attribs.srcset;
         }
-        // If parent is <p>, just return the <img> with full width styles
+        // Use Next.js Image for optimization
+        const isLCP = !firstImageFound;
+        if (isLCP) firstImageFound = true;
+        const imageProps = {
+          src: attribs.src,
+          alt: attribs.alt || "",
+          width: attribs.width ? parseInt(attribs.width) : 800,
+          height: attribs.height ? parseInt(attribs.height) : 450,
+          style: {
+            width: "100%",
+            height: "auto",
+            display: "block",
+            margin: "2rem 0",
+          },
+          sizes: "(max-width: 640px) 100vw, (max-width: 768px) 100vw, 1200px",
+          quality: 75,
+          ...(isLCP ? { loading: 'eager' as const, fetchPriority: 'high' as const } : { loading: 'lazy' as const }),
+          className: attribs.className || "object-cover",
+        };
+        // If parent is <p>, just return the <Image> with full width styles
         if (
           domNode.parent &&
           typeof (domNode.parent as any).name === "string" &&
           (domNode.parent as any).name === "p"
         ) {
-          return (
-            <img
-              {...attribs}
-              style={{
-                width: "100%",
-                height: "auto",
-                display: "block",
-                margin: "2rem 0",
-              }}
-            />
-          );
+          return <Image {...imageProps} />;
         }
         // Otherwise, wrap in a div for spacing
         return (
           <div style={{ width: "100%", margin: "2rem 0" }}>
-            <img
-              {...attribs}
-              style={{
-                width: "100%",
-                height: "auto",
-                display: "block",
-                margin: 0,
-              }}
-            />
+            <Image {...imageProps} />
           </div>
         );
       }
