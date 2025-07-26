@@ -26,7 +26,7 @@ export default function TableOfContents({ toc }: { toc: TocItem[] }) {
         aria-controls="toc-content"
       >
         <h2 className="font-semibold text-lg text-black uppercase mb-0">
-          See What's Inside
+          See What&apos;s Inside
         </h2>
         {isOpen ? (
           <FaMinus className="text-black" />
