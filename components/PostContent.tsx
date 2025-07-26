@@ -221,7 +221,7 @@ export default async function PostContent({ post }: { post: Post }) {
                 fill
                 loading="eager"
                 fetchPriority="high"
-                sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, 1200px"
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, 426px"
                 className="object-cover"
               />
             </div>
