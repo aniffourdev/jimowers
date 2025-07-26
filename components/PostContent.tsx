@@ -219,7 +219,8 @@ export default async function PostContent({ post }: { post: Post }) {
                 src={featuredMedia.source_url}
                 alt={post.title.rendered}
                 fill
-                priority // sets fetchpriority="high" and disables lazy loading
+                loading="eager"
+                fetchPriority="high"
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 100vw, 1200px"
                 className="object-cover"
               />
