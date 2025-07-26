@@ -1,10 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { Post } from "@/lib/wordpress.d";
+import { Post, Author } from "@/lib/wordpress.d";
 import { cn } from "@/lib/utils";
-
-import { getAuthorById } from "@/lib/wordpress";
 
 import { formatDate, decodeHtmlEntities } from "@/lib/utils";
 
@@ -12,8 +10,7 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "");
 }
 
-export async function PostCard({ post }: { post: Post }) {
-  const author = post.author ? await getAuthorById(post.author) : null;
+export function PostCard({ post, author }: { post: Post; author?: Author }) {
   const date = formatDate(post.date);
   // Use embedded category if available
   const _embedded = post._embedded as any;

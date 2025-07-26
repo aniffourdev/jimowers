@@ -1,7 +1,7 @@
 // Craft Imports
 import { Section, Container, Prose } from "@/components/craft";
 import { PostCard } from "@/components/posts/post-card";
-import PillarPostCard from "@/components/posts/pillar-post-card";
+import PillarPostsCarousel from "@/components/PillarPostsCarousel";
 import {
   getAllCategories,
   getAllAuthors,
@@ -13,6 +13,8 @@ import { decodeHtmlEntities } from "@/lib/utils";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import AuthorSpotlightCarousel from "@/components/AuthorSpotlightCarousel";
+import { PiResizeDuotone } from "react-icons/pi";
 
 // Helper to fetch only pillar posts
 async function getPillarPosts() {
@@ -67,19 +69,19 @@ export default async function Home() {
         <div className="flex flex-col md:flex-row gap-4 justify-center mb-8">
           <Link
             href="/category/lawn-mowers"
-            className="px-6 py-3 rounded border font-semibold hover:bg-teal-50 transition"
+            className="px-6 py-3 rounded border font-semibold bg-white text-teal-600 transition"
           >
             Explore Lawn Mowers
           </Link>
           <Link
             href="/buying-guides"
-            className="px-6 py-3 rounded border font-semibold hover:bg-teal-50 transition"
+            className="px-6 py-3 rounded border font-semibold bg-white text-teal-600 transition"
           >
             Read Our Buying Guides
           </Link>
           <Link
             href="/authors"
-            className="px-6 py-3 rounded border font-semibold hover:bg-teal-50 transition"
+            className="px-6 py-3 rounded border font-semibold bg-white text-teal-600 transition"
           >
             Meet Our Experts
           </Link>
@@ -91,14 +93,10 @@ export default async function Home() {
   const pillarGrid = (
     <Section className="py-8">
       <Container>
-        <h2 className="text-3xl font-black mb-6 text-center underline underline-offset-4 decoration-teal-200 ring-offset-black">
+      <h2 className="text-2xl font-bold mb-5 text-center underline underline-offset-4 decoration-teal-200 ring-offset-black">
           Explore Our Main Topics
         </h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {pillarPosts.map((post: any) => (
-            <PillarPostCard key={post.id} post={post} />
-          ))}
-        </div>
+        <PillarPostsCarousel posts={pillarPosts} />
       </Container>
     </Section>
   );
@@ -109,7 +107,7 @@ export default async function Home() {
       <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg flex flex-col md:flex-row items-center gap-8 p-8 border dark:border-zinc-800">
         <div className="flex-1 flex flex-col items-start justify-center">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">📏</span>
+            <PiResizeDuotone className="text-teal-600 size-8" />
             <h2 className="text-2xl font-bold">Lawn Mower Size Finder Tool</h2>
           </div>
           <p className="text-muted-foreground mb-4">
@@ -180,9 +178,10 @@ export default async function Home() {
               <Link href={`/${cat.slug}`}>{decodeHtmlEntities(cat.name)}</Link>
             </h2>
             <div className="grid md:grid-cols-3 gap-4">
-              {catPosts.slice(0, 3).map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
+              {catPosts.slice(0, 3).map((post) => {
+                const author = authors.find(a => a.id === post.author);
+                return <PostCard key={post.id} post={post} author={author} />;
+              })}
             </div>
           </Container>
         </Section>
@@ -204,33 +203,8 @@ export default async function Home() {
   const authorSpotlight = (
     <Section className="py-8">
       <Container>
-        <h2 className="text-xl font-bold mb-4">Author Spotlight</h2>
-        <div className="grid md:grid-cols-3 gap-4">
-          {spotlightAuthors.map((author) => (
-            <Link
-              key={author.id}
-              href={`/${author.slug}`}
-              className="border rounded-lg p-5 flex flex-col items-center hover:shadow-md transition"
-            >
-              {author.avatar_urls?.[96] && (
-                <Image
-                  src={author.avatar_urls[96]}
-                  alt={author.name}
-                  width={64}
-                  height={64}
-                  className="rounded-full mb-2"
-                />
-              )}
-              <span className="font-semibold text-lg mb-1">{author.name}</span>
-              <span className="text-xs text-muted-foreground mb-1">
-                {author.expertise}
-              </span>
-              <span className="text-sm text-muted-foreground text-center">
-                {author.bio}
-              </span>
-            </Link>
-          ))}
-        </div>
+        <h2 className="text-2xl font-bold mb-5 text-center underline underline-offset-4 decoration-teal-200 ring-offset-black">Author Spotlight</h2>
+        <AuthorSpotlightCarousel authors={spotlightAuthors} />
       </Container>
     </Section>
   );
