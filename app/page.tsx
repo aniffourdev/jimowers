@@ -132,8 +132,8 @@ export default async function Home() {
             <span className="text-yellow-400 text-lg">★</span>
             <span className="text-yellow-400 text-lg">★</span>
             <span className="text-xs text-muted-foreground ml-2 hidden sm:block">
-              "This tool helped me find the right mower for my backyard in
-              seconds!"
+              &ldquo;This tool helped me find the right mower for my backyard in
+              seconds!&rdquo;
             </span>
           </div>
           {/* Created by author */}

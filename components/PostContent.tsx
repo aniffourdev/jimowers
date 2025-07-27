@@ -203,7 +203,7 @@ function parseContentWithYouTube(content: string) {
         if (isLCP) firstImageFound = true;
         const imageProps = {
           src: attribs.src,
-          alt: attribs.alt || "",
+          alt: attribs.alt || "Article image",
           width: attribs.width ? parseInt(attribs.width) : 800,
           height: attribs.height ? parseInt(attribs.height) : 450,
           style: {
