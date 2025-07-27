@@ -14,6 +14,12 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.cssauthor.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   async redirects() {

@@ -8,10 +8,16 @@ import {
   getFeaturedMediaById,
   getAuthorById,
   getCategoryById,
+  getPostsByCategory,
+  getCommentsByPostId,
 } from "@/lib/wordpress";
-import parse, { domToReact, Element, DOMNode } from "html-react-parser";
+import parse, { Element, DOMNode } from "html-react-parser";
 import TableOfContents, { TocItem } from "@/components/TableOfContents";
 import Image from "next/image";
+import { FaFire } from "react-icons/fa";
+import { FaFacebookF, FaXTwitter, FaPinterestP } from "react-icons/fa6";
+import CommentsSection from "@/components/CommentsSection";
+import ShareSection from "@/components/ShareSection";
 
 function createSlug(text: string): string {
   return text
@@ -129,7 +135,9 @@ function parseContentWithYouTube(content: string) {
           },
           sizes: "(max-width: 640px) 100vw, (max-width: 768px) 100vw, 1200px",
           quality: 75,
-          ...(isLCP ? { loading: 'eager' as const, fetchPriority: 'high' as const } : { loading: 'lazy' as const }),
+          ...(isLCP
+            ? { loading: "eager" as const, fetchPriority: "high" as const }
+            : { loading: "lazy" as const }),
           className: attribs.className || "object-cover",
         };
         // If parent is <p>, just return the <Image> with full width styles
@@ -152,17 +160,151 @@ function parseContentWithYouTube(content: string) {
 }
 
 // Add a simple Sidebar component at the bottom of the file
-function Sidebar() {
+function Sidebar({ author }: { author: any }) {
+  // Truncate bio to max 120 characters
+  const truncatedBio = author.description
+    ? author.description.length > 120
+      ? author.description.substring(0, 100) + "..."
+      : author.description
+    : "";
+
   return (
     <aside className="w-full lg:w-80 flex-shrink-0 lg:pl-8 mt-12 lg:mt-0">
-      {/* Add your widgets, author info, ads, etc. here */}
-      <div className="bg-slate-50 border rounded-lg p-6 mb-6">
-        <h3 className="font-bold text-lg mb-2">Sidebar</h3>
-        <p className="text-sm text-muted-foreground">
-          Add widgets, author info, ads, etc. here.
-        </p>
+      {/* Author Widget */}
+      <div className="bg-muted/60 dark:bg-muted/80 border-border p-6 mb-8 relative rounded-2xl overflow-hidden shadow-xl border dark:border-zinc-800 bg-gradient-to-br from-teal-50 to-white dark:from-zinc-900 dark:to-zinc-800 group transition-transform hover:scale-[1.025]">
+        <div className="flex flex-col items-center text-center">
+          {/* Author Profile Image */}
+          <Link href={`/${author.slug}`} className="group">
+            <div className="relative mb-3">
+              {author.avatar_urls && (
+                <Image
+                  src={author.avatar_urls[96] || author.avatar_urls[48]}
+                  alt={author.name}
+                  width={80}
+                  height={80}
+                  className="rounded-full object-cover"
+                />
+              )}
+            </div>
+          </Link>
+
+          {/* Author Name */}
+          <Link
+            href={`/${author.slug}`}
+            className="text-lg font-semibold text-foreground hover:text-primary transition-colors mb-2"
+          >
+            {author.name}
+          </Link>
+
+          {/* Author Bio */}
+          {truncatedBio && (
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {truncatedBio}
+            </p>
+          )}
+        </div>
       </div>
+
+      {/* Trending Articles Widget */}
+      <TrendingArticlesWidget />
     </aside>
+  );
+}
+
+// Trending Articles Widget Component
+async function TrendingArticlesWidget() {
+  // Fetch some trending articles (you can modify this logic as needed)
+  const trendingPosts = await getPostsByCategory(1); // Get posts from first category as example
+
+  return (
+    <div className="">
+      {/* Header with flame icon */}
+      <div className="flex items-center justify-start gap-2 mb-2">
+        <FaFire className="text-orange-500 text-lg" />
+        <h3 className="font-bold text-xl text-foreground underline underline-offset-6 decoration-teal-200">
+          Trending Articles
+        </h3>
+      </div>
+
+      {/* Articles List */}
+      <div className="space-y-0">
+        {trendingPosts.slice(0, 4).map((post, index) => (
+          <div key={post.id}>
+            <div className="flex items-center justify-center gap-3 py-3">
+              {/* Circular Thumbnail */}
+              <div className="flex-shrink-0">
+                {post._embedded?.["wp:featuredmedia"]?.[0]?.source_url ? (
+                  <Image
+                    src={post._embedded["wp:featuredmedia"][0].source_url}
+                    alt={post.title.rendered}
+                    width={48}
+                    height={48}
+                    className="rounded-full object-cover w-12 h-12"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-muted-foreground/20 flex items-center justify-center">
+                    <span className="text-muted-foreground text-xs">📄</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Article Title */}
+              <Link
+                href={`/${post.slug}`}
+                className="text-sm text-foreground font-semibold hover:text-primary transition-colors leading-tight line-clamp-2"
+              >
+                {post.title.rendered.replace(/<[^>]*>/g, "")}
+              </Link>
+            </div>
+
+            {/* Separator line (except for last item) */}
+            {index < Math.min(trendingPosts.length, 4) - 1 && (
+              <div className="border-t border-border/50 w-full" />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Author Details Section Component
+function AuthorDetailsSection({ author }: { author: any }) {
+  return (
+    <div className="bg-slate-100 dark:bg-muted/80 rounded-2xl p-6 mb-8">
+      <div className="flex items-start gap-4">
+        {/* Author Image */}
+        <div className="flex-shrink-0">
+          {author.avatar_urls && (
+            <Image
+              src={author.avatar_urls[96] || author.avatar_urls[48]}
+              alt={author.name}
+              width={80}
+              height={80}
+              className="rounded-full object-cover"
+            />
+          )}
+        </div>
+
+        {/* Author Info */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-xl text-foreground mb-2">
+            {author.name}
+          </h3>
+          {author.description && (
+            <p className="text-muted-foreground leading-relaxed mb-4">
+              {author.description}
+            </p>
+          )}
+          <Link
+            href={`/${author.slug}`}
+            className="text-teal-500 text-sm font-bold hover:text-primary/80 transition-colors"
+          >
+            View All Posts &gt;
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -182,6 +324,11 @@ export default async function PostContent({ post }: { post: Post }) {
   const { toc, modifiedContent } = generateTableOfContents(
     post.content.rendered
   );
+
+  // Fetch comments for this post
+  const comments = await getCommentsByPostId(post.id);
+
+  const postTitle = post.title.rendered.replace(/<[^>]*>/g, "");
 
   return (
     <Section>
@@ -229,14 +376,25 @@ export default async function PostContent({ post }: { post: Post }) {
         </Prose>
 
         {/* Two-column layout below the featured image */}
-        <div className="flex flex-col lg:flex-row gap-0 lg:gap-8">
+        <div className="flex flex-col lg:flex-row gap-0 lg:gap-5">
           {/* Left: TOC and Article */}
           <div className="flex-1 min-w-0">
             {toc.length > 0 && <TableOfContents toc={toc} />}
             <Article>{parseContentWithYouTube(modifiedContent)}</Article>
+
+            {/* Share Section */}
+            <ShareSection title={postTitle} slug={post.slug} />
+
+            {/* Author Details Section */}
+            <AuthorDetailsSection author={author} />
+
+            {/* Comments Section */}
+            <div className="mt-16">
+              <CommentsSection postId={post.id} initialComments={comments} />
+            </div>
           </div>
           {/* Right: Sidebar */}
-          <Sidebar />
+          <Sidebar author={author} />
         </div>
       </Container>
     </Section>

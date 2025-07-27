@@ -275,6 +275,47 @@ export async function searchAuthors(query: string): Promise<Author[]> {
   });
 }
 
+export async function getCommentsByPostId(postId: number) {
+  try {
+    // Fetch top-level comments (parent = 0)
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_WORDPRESS_API_URL}/wp-json/wp/v2/comments?post=${postId}&parent=0&orderby=date&order=desc`
+    );
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch comments");
+    }
+    
+    const comments = await response.json();
+    
+    // Fetch replies for each comment recursively
+    const fetchReplies = async (comment: any): Promise<any> => {
+      const replyResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_WORDPRESS_API_URL}/wp-json/wp/v2/comments?post=${postId}&parent=${comment.id}&orderby=date&order=asc`
+      );
+      
+      if (replyResponse.ok) {
+        const replies = await replyResponse.json();
+        for (const reply of replies) {
+          await fetchReplies(reply);
+        }
+        comment.replies = replies;
+      }
+      return comment;
+    };
+
+    // Fetch replies for each top-level comment
+    for (const comment of comments) {
+      await fetchReplies(comment);
+    }
+
+    return comments;
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    return [];
+  }
+}
+
 async function wordpressFetch<T>(
   endpoint: string,
   params?: Record<string, any>
