@@ -19,12 +19,14 @@ export default function PillarPostsCarousel({
       spaceBetween={24}
       slidesPerView={1}
       breakpoints={{
-        640: { slidesPerView: 1 },
-        768: { slidesPerView: 2 },
-        1024: { slidesPerView: 3 },
+        480: { slidesPerView: 1, spaceBetween: 16 },
+        640: { slidesPerView: 1, spaceBetween: 20 },
+        768: { slidesPerView: 2, spaceBetween: 24 },
+        1024: { slidesPerView: 3, spaceBetween: 24 },
       }}
       autoplay={{ delay: 5000, disableOnInteraction: false }}
       modules={[Autoplay]}
+      className="px-4 sm:px-0"
     >
       {posts.map((post) => (
         <SwiperSlide key={post.id}>

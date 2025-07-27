@@ -21,7 +21,7 @@ export function PostCard({ post, author }: { post: Post; author?: Author }) {
     : "";
 
   return (
-    <article className="bg-white dark:bg-zinc-900 shadow dark:shadow-lg p-0 overflow-hidden border dark:border-zinc-800 flex flex-col transition-colors duration-200">
+    <article className="bg-white dark:bg-zinc-900 shadow dark:shadow-lg p-0 overflow-hidden border dark:border-zinc-800 flex flex-col transition-colors duration-200 h-full">
       <div className="relative">
         {post._embedded?.["wp:featuredmedia"]?.[0]?.source_url && (
           <Image
@@ -29,35 +29,35 @@ export function PostCard({ post, author }: { post: Post; author?: Author }) {
             alt={post.title.rendered}
             width={600}
             height={300}
-            className="w-full h-52 object-cover"
+            className="w-full h-40 sm:h-48 md:h-52 object-cover"
             priority={true}
           />
         )}
         {author && (
           <Link
             href={`/${author.slug}`}
-            className="absolute bottom-0 bg-teal-700 dark:bg-teal-600 text-white px-3 py-1.5 rounded-tr-lg text-sm font-semibold shadow-md z-10"
+            className="absolute bottom-0 bg-teal-700 dark:bg-teal-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-tr-lg text-xs sm:text-sm font-semibold shadow-md z-10"
             style={{ textShadow: "0 1px 2px rgba(0,0,0,0.15)" }}
           >
             By {author.name}
           </Link>
         )}
       </div>
-      <div className="flex flex-col gap-2 px-6 pb-6 pt-4">
+      <div className="flex flex-col gap-2 px-4 sm:px-6 pb-4 sm:pb-6 pt-3 sm:pt-4 flex-1">
         <Link
           href={`/${post.slug}`}
           className="hover:text-teal-600 dark:hover:text-teal-400 duration-200 transition-colors"
         >
-          <h2 className="text-xl font-bold leading-tight mb-2 mt-3 text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-base sm:text-lg md:text-xl font-bold leading-tight mb-2 mt-2 sm:mt-3 text-zinc-900 dark:text-zinc-100">
             {decodeHtmlEntities(post.title.rendered)}
           </h2>
         </Link>
-        <div className="text-muted-foreground dark:text-zinc-300 text-sm mb-4">
+        <div className="text-muted-foreground dark:text-zinc-300 text-xs sm:text-sm mb-3 sm:mb-4 flex-1">
           {contentText}
         </div>
         {author && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <div className="flex items-center gap-2 mt-auto">
+            <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300">
               {date}
             </span>
           </div>

@@ -15,8 +15,13 @@ import { ChevronDown, Search as SearchIcon, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { PostCardClient } from "@/components/posts/post-card-client";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
-export function DynamicNav() {
+interface DynamicNavProps {
+  className?: string;
+}
+
+export function DynamicNav({ className }: DynamicNavProps) {
   const [menu, setMenu] = useState<Menu | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +72,7 @@ export function DynamicNav() {
 
   if (isLoading) {
     return (
-      <div className="mx-2 hidden md:flex items-center gap-4">
+      <div className={cn("mx-2 items-center gap-4", className)}>
         {[...Array(5)].map((_, i) => (
           <Skeleton key={i} className="h-3.5 w-[90px]" />
         ))}
@@ -77,7 +82,7 @@ export function DynamicNav() {
 
   if (error || !menu) {
     return (
-      <div className="mx-2 hidden md:flex">
+      <div className={cn("mx-2", className)}>
         <Button variant="ghost" size="sm" disabled>
           Menu Error
         </Button>
@@ -87,7 +92,7 @@ export function DynamicNav() {
 
   return (
     <>
-      <div className="mx-2 hidden md:flex items-center gap-1">
+      <div className={cn("mx-2 items-center gap-1", className)}>
         {menu.menuItems.nodes
           .filter((item) => !item.parentId)
           .map((item) => (
@@ -95,7 +100,7 @@ export function DynamicNav() {
           ))}
         {/* Search Icon */}
         <button
-          className="ml-2 p-2 rounded-full hover:bg-accent transition-colors"
+          className="ml-2 p-2 rounded-full transition-colors"
           aria-label="Search"
           onClick={() => setShowSearch(true)}
         >

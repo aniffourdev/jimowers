@@ -52,8 +52,87 @@ function youtubeUrlToEmbed(url: string) {
 
 function parseContentWithYouTube(content: string) {
   let firstImageFound = false;
+ 
+ // Get the current domain for internal link detection
+ const getCurrentDomain = () => {
+   if (typeof window !== 'undefined') {
+     return window.location.hostname;
+   }
+   // Fallback for SSR - you can replace this with your actual domain
+   return process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL).hostname : 'localhost';
+ };
+ 
+ const currentDomain = getCurrentDomain();
+ 
   return parse(content, {
     replace: (domNode: DOMNode) => {
+      // Convert internal links to Next.js Link components
+      if (domNode instanceof Element && domNode.name === "a" && domNode.attribs?.href) {
+        const href = domNode.attribs.href;
+        
+        // Check if it's an internal link (relative URL or same domain)
+        const isInternalLink = href.startsWith('/') || 
+          href.startsWith('./') || 
+          href.startsWith('../') ||
+          (href.startsWith('http') && (href.includes(currentDomain) || href.includes('localhost')));
+        
+        if (isInternalLink) {
+          // Extract the slug from the URL
+          let slug = href;
+          
+          // Remove domain if present
+          if (href.startsWith('http')) {
+            const url = new URL(href);
+            slug = url.pathname;
+          }
+          
+          // Remove leading slash and any query parameters
+          slug = slug.replace(/^\//, '').split('?')[0].split('#')[0];
+          
+          // If it's not empty and doesn't contain file extensions, treat as internal link
+          if (slug && !slug.includes('.') && !slug.includes('wp-admin') && !slug.includes('wp-content')) {
+            // Extract text content from children
+            const linkText = domNode.children?.map(child => {
+              if (child.type === 'text') {
+                return child.data;
+              }
+              return '';
+            }).join('') || '';
+            
+            return (
+              <Link
+                href={`/${slug}`}
+                className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
+              >
+                {linkText}
+              </Link>
+            );
+          }
+        }
+        
+        // For external links, keep as regular anchor but add target="_blank" and rel="noopener noreferrer"
+        if (href.startsWith('http') && !href.includes(currentDomain) && !href.includes('localhost')) {
+          // Extract text content from children
+          const linkText = domNode.children?.map(child => {
+            if (child.type === 'text') {
+              return child.data;
+            }
+            return '';
+          }).join('') || '';
+          
+          return (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
+            >
+              {linkText}
+            </a>
+          );
+        }
+      }
+      
       // Convert plain text YouTube URLs to iframes
       if (domNode.type === "text" && typeof domNode.data === "string") {
         const trimmed = domNode.data.trim();

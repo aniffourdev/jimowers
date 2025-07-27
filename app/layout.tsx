@@ -109,8 +109,8 @@ const Nav = ({ className, children, id }: NavProps) => {
         </Link>
         {children}
         <div className="flex items-center gap-2">
-          <DynamicNav />
-          <MobileNav />
+          <DynamicNav className="hidden md:flex" />
+          <MobileNav className="md:hidden" />
         </div>
       </div>
     </nav>

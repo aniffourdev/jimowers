@@ -15,6 +15,7 @@ import Image from "next/image";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { FaLinkedin, FaFacebook } from "react-icons/fa";
 import { RiTwitterXFill } from "react-icons/ri";
+import Link from "next/link";
 
 export default async function AuthorContent({
   author,
@@ -61,56 +62,58 @@ export default async function AuthorContent({
 
   return (
     <Section>
-      <Container className="max-w-2xl mx-auto">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
-          <div className="block lg:flex lg:justify-start lg:items-center lg:gap-5">
+      <Container className="max-w-4xl mx-auto">
+        <div className="flex flex-col items-center text-center gap-6 mb-8">
+          <div className="flex flex-col items-center gap-4">
             {author.avatar_urls && (
               <Image
                 src={author.avatar_urls[96] || author.avatar_urls[48]}
                 alt={author.name}
-                className="rounded-full w-32 h-32 object-cover border-4 border-gray-200"
+                className="rounded-full w-24 h-24 sm:w-32 sm:h-32 object-cover border-4 border-gray-200 dark:border-zinc-700"
                 height={128}
                 width={128}
               />
             )}
-            <div className="flex-1 flex flex-col items-center md:items-start">
-              <h1 className="text-2xl font-bold mb-2 flex items-center gap-1">
+            <div className="flex flex-col items-center">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 flex items-center gap-1">
                 {author.name}{" "}
                 <IoCheckmarkCircle
-                  className="size-5 relative top-0.5 text-teal-700"
+                  className="size-5 relative -top-[1.2px] text-teal-700"
                   title="Verified"
                 />
               </h1>
-              <p className="text-base text-muted-foreground mb-2 py-2.5 pb-1 -mt-4">Lead Turf Specialist & Mow-ditor in Chief</p>
-              <div className="flex gap-2 mb-2">
+              <p className="text-sm sm:text-base text-muted-foreground mb-3 text-center">Lead Turf Specialist & Mow-ditor in Chief</p>
+              <div className="flex gap-3 mb-4">
                 {socials.map((social) => (
-                  <a
+                  <Link
                     key={social.type}
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-teal-600"
+                    className="hover:text-teal-600 transition-colors"
                     aria-label={social.label}
                   >
-                    {social.icon}
-                  </a>
+                    <div className="size-5">
+                      {social.icon}
+                    </div>
+                  </Link>
                 ))}
               </div>
             </div>
           </div>
         </div>
         {author.description && (
-          <p className="text-center md:text-left text-muted-foreground mb-8 border-t-[1px] border-gray-200 dark:border-zinc-800 pt-5">
+          <p className="text-center text-muted-foreground mb-8 border-t border-gray-200 dark:border-zinc-800 pt-6 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
             {author.description}
           </p>
         )}
       </Container>
       <Container>
-        <div className="w-full mt-8">
-          <h2 className="text-2xl mb-4 font-bold text-center">
+        <div className="w-full mt-8 sm:mt-12">
+          <h2 className="text-xl sm:text-2xl mb-6 font-bold text-center">
             Articles from <span className="text-teal-600">{author.name}</span>
           </h2>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {posts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}

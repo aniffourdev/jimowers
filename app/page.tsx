@@ -57,31 +57,31 @@ export default async function Home() {
 
   // 1. Hero Section
   const hero = (
-    <Section className="py-12 md:py-20 text-center bg-teal-50 dark:bg-zinc-900">
+    <Section className="py-8 sm:py-12 md:py-16 lg:py-20 text-center bg-teal-50 dark:bg-zinc-900">
       <Container>
-        <h1 className="text-4xl md:text-5xl font-black mb-4">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-3 sm:mb-4">
           Your Ultimate Guide to Lawn Mowers and Eco-Friendly Lawn Care
         </h1>
-        <p className="text-lg text-muted-foreground mb-8">
+        <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-8">
           Expert reviews, maintenance tips, and eco-friendly guides from trusted
           authors.
         </p>
-        <div className="flex flex-col md:flex-row gap-4 justify-center mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-6 sm:mb-8">
           <Link
             href="/category/lawn-mowers"
-            className="px-6 py-3 rounded border font-semibold bg-white text-teal-600 transition"
+            className="px-4 sm:px-6 py-2.5 sm:py-3 rounded border font-semibold bg-white text-teal-600 transition text-sm sm:text-base"
           >
             Explore Lawn Mowers
           </Link>
           <Link
             href="/buying-guides"
-            className="px-6 py-3 rounded border font-semibold bg-white text-teal-600 transition"
+            className="px-4 sm:px-6 py-2.5 sm:py-3 rounded border font-semibold bg-white text-teal-600 transition text-sm sm:text-base"
           >
             Read Our Buying Guides
           </Link>
           <Link
             href="/authors"
-            className="px-6 py-3 rounded border font-semibold bg-white text-teal-600 transition"
+            className="px-4 sm:px-6 py-2.5 sm:py-3 rounded border font-semibold bg-white text-teal-600 transition text-sm sm:text-base"
           >
             Meet Our Experts
           </Link>
@@ -91,9 +91,9 @@ export default async function Home() {
   );
 
   const pillarGrid = (
-    <Section className="py-8">
+    <Section className="py-6 sm:py-8">
       <Container>
-      <h2 className="text-2xl font-bold mb-5 text-center underline underline-offset-4 decoration-teal-200 ring-offset-black">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-center underline underline-offset-4 decoration-teal-200 ring-offset-black">
           Explore Our Main Topics
         </h2>
         <PillarPostsCarousel posts={pillarPosts} />
@@ -103,14 +103,14 @@ export default async function Home() {
 
   // Lawn Mower Size Finder Tool Section
   const sizeFinderSection = (
-    <Section className="max-w-6xl mx-auto py-4 px-6 ">
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg flex flex-col md:flex-row items-center gap-8 p-8 border dark:border-zinc-800">
+    <Section className="max-w-6xl mx-auto py-4 sm:py-6 px-4 sm:px-6">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl sm:rounded-2xl shadow-lg flex flex-col lg:flex-row items-center gap-6 sm:gap-8 p-6 sm:p-8 border dark:border-zinc-800">
         <div className="flex-1 flex flex-col items-start justify-center">
-          <div className="flex items-center gap-2 mb-2">
-            <PiResizeDuotone className="text-teal-600 size-8" />
-            <h2 className="text-2xl font-bold">Lawn Mower Size Finder Tool</h2>
+          <div className="flex items-center gap-2 mb-3 sm:mb-2">
+            <PiResizeDuotone className="text-teal-600 size-6 sm:size-8" />
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Lawn Mower Size Finder Tool</h2>
           </div>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-sm sm:text-base text-muted-foreground mb-4">
             Not sure what size lawn mower you need? Use our free Lawn Mower Size
             Finder to get personalized recommendations based on your lawn size,
             terrain, and mowing habits. Whether you have a small yard or acres
@@ -118,27 +118,27 @@ export default async function Home() {
             confidence.
           </p>
           <Link href="/lawn-mower-size-finder">
-            <button className="bg-gradient-to-r from-teal-500 to-teal-700 hover:from-teal-600 hover:to-teal-800 text-white font-bold px-6 py-3 rounded-full shadow transition mb-2">
+            <button className="bg-gradient-to-r from-teal-500 to-teal-700 hover:from-teal-600 hover:to-teal-800 text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-full shadow transition mb-2 text-sm sm:text-base">
               🔍 Find Your Mower Size
             </button>
           </Link>
-          <span className="text-xs text-muted-foreground mb-2">
+          <span className="text-xs text-muted-foreground mb-2 sm:mb-3">
             Takes less than 30 seconds to get your result.
           </span>
-          <div className="mt-4 flex items-center gap-0.5">
+          <div className="mt-3 sm:mt-4 flex items-center gap-0.5">
             <span className="text-yellow-400 text-lg">★</span>
             <span className="text-yellow-400 text-lg">★</span>
             <span className="text-yellow-400 text-lg">★</span>
             <span className="text-yellow-400 text-lg">★</span>
             <span className="text-yellow-400 text-lg">★</span>
-            <span className="text-xs text-muted-foreground ml-2">
-              “This tool helped me find the right mower for my backyard in
-              seconds!”
+            <span className="text-xs text-muted-foreground ml-2 hidden sm:block">
+              "This tool helped me find the right mower for my backyard in
+              seconds!"
             </span>
           </div>
           {/* Created by author */}
           {testimonialAuthor && (
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex items-center gap-2 mt-3 sm:mt-4">
               {testimonialAuthor.avatar_urls?.[48] && (
                 <Image
                   src={testimonialAuthor.avatar_urls[48]}
@@ -148,7 +148,7 @@ export default async function Home() {
                   className="rounded-full border"
                 />
               )}
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground text-sm">
                 Created by:{" "}
                 <Link
                   href={`/${testimonialAuthor.slug}`}
@@ -160,7 +160,7 @@ export default async function Home() {
             </div>
           )}
         </div>
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 hidden lg:block">
           <RulerSVG />
         </div>
       </div>
@@ -172,12 +172,12 @@ export default async function Home() {
     categories.slice(0, 4).map(async (cat) => {
       const catPosts = await getPostsByCategory(cat.id);
       return (
-        <Section key={cat.id} className="py-8">
+        <Section key={cat.id} className="py-6 sm:py-8">
           <Container>
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
               <Link href={`/${cat.slug}`}>{decodeHtmlEntities(cat.name)}</Link>
             </h2>
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {catPosts.slice(0, 3).map((post) => {
                 const author = authors.find(a => a.id === post.author);
                 return <PostCard key={post.id} post={post} author={author} />;
@@ -201,9 +201,9 @@ export default async function Home() {
       author.description || "Trusted contributor to our lawn care community.",
   }));
   const authorSpotlight = (
-    <Section className="py-8">
+    <Section className="py-6 sm:py-8">
       <Container>
-        <h2 className="text-2xl font-bold mb-5 text-center underline underline-offset-4 decoration-teal-200 ring-offset-black">Author Spotlight</h2>
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-center underline underline-offset-4 decoration-teal-200 ring-offset-black">Author Spotlight</h2>
         <AuthorSpotlightCarousel authors={spotlightAuthors} />
       </Container>
     </Section>
@@ -212,21 +212,21 @@ export default async function Home() {
   // 5. Top Resources / Evergreen Guides (3 creative posts)
   const evergreenPosts = posts.slice(0, 3);
   const evergreenGuides = (
-    <Section className="py-8">
+    <Section className="py-6 sm:py-8">
       <Container>
-        <h2 className="text-xl font-bold mb-4">
+        <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
           Top Resources / Evergreen Guides
         </h2>
-        <ul className="list-disc pl-6 space-y-2">
+        <ul className="list-disc pl-4 sm:pl-6 space-y-2">
           {evergreenPosts.map((post) => (
             <li key={post.id}>
               <Link
                 href={`/${post.slug}`}
-                className="font-semibold hover:underline"
+                className="font-semibold hover:underline text-sm sm:text-base"
               >
                 {decodeHtmlEntities(post.title.rendered)}
               </Link>
-              <span className="block text-muted-foreground text-sm">
+              <span className="block text-muted-foreground text-xs sm:text-sm">
                 {decodeHtmlEntities(
                   post.excerpt?.rendered?.replace(/<[^>]+>/g, "") || ""
                 )}
@@ -240,26 +240,26 @@ export default async function Home() {
 
   // 7. Email opt-in/newsletter
   const newsletterSection = (
-    <Section className="py-8">
+    <Section className="py-6 sm:py-8">
       <Container>
-        <div className="max-w-lg mx-auto bg-teal-50 dark:bg-zinc-800 rounded-lg p-6 text-center">
-          <h3 className="text-lg font-bold mb-2">
+        <div className="max-w-lg mx-auto bg-teal-50 dark:bg-zinc-800 rounded-lg p-4 sm:p-6 text-center">
+          <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3">
             Download Our Free Lawn Mower Maintenance Checklist
           </h3>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
             Subscribe to get expert tips, guides, and our exclusive checklist
             delivered to your inbox.
           </p>
-          <form className="flex flex-col md:flex-row gap-2 justify-center">
+          <form className="flex flex-col sm:flex-row gap-2 justify-center">
             <Input
               type="email"
               placeholder="Your email address"
               required
-              className="flex-1"
+              className="flex-1 text-sm sm:text-base"
             />
             <button
               type="submit"
-              className="px-6 py-2 rounded bg-teal-700 text-white font-semibold hover:bg-teal-800 transition"
+              className="px-4 sm:px-6 py-2 rounded bg-teal-700 text-white font-semibold hover:bg-teal-800 transition text-sm sm:text-base"
             >
               Subscribe
             </button>
