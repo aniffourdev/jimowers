@@ -15,12 +15,12 @@ export default function ContactPage() {
               <FaLeaf className="text-teal-600 dark:text-teal-400 text-2xl" />
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              Let's Grow Together
+              Let&apos;s Grow Together
             </h1>
             <p className="text-xl sm:text-2xl text-muted-foreground mb-8 leading-relaxed">
               Have questions about lawn care? Need expert advice on choosing the perfect mower? 
               <br className="hidden sm:block" />
-              We're here to help you create the lawn of your dreams.
+              We&apos;re here to help you create the lawn of your dreams.
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
@@ -64,7 +64,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-foreground mb-1">Email Us</h4>
-                      <p className="text-muted-foreground mb-2">We'll respond within 24 hours</p>
+                      <p className="text-muted-foreground mb-2">We&apos;ll respond within 24 hours</p>
                       <a href="mailto:aniffour.dev@gmail.com" className="text-teal-600 dark:text-teal-400 font-medium hover:underline">
                         aniffour.dev@gmail.com
                       </a>
@@ -132,7 +132,7 @@ export default function ContactPage() {
                     Send us a Message
                   </h2>
                   <p className="text-muted-foreground">
-                    Tell us about your lawn care needs and we'll get back to you with personalized advice.
+                    Tell us about your lawn care needs and we&apos;ll get back to you with personalized advice.
                   </p>
                 </div>
                 <ContactForm />
