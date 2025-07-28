@@ -173,6 +173,24 @@ function MenuItem({ item }: { item: MenuItem }) {
     item.childItems.nodes.length > 0;
   const [isOpen, setIsOpen] = useState(false);
 
+  const renderMenuItemContent = (menuItem: MenuItem) => {
+    console.log('MenuItem data:', menuItem); // Debug log
+    return (
+      <div className="flex items-center gap-2">
+        {menuItem.icon_image ? (
+          <img 
+            src={menuItem.icon_image} 
+            alt="" 
+            className="w-4 h-4 object-contain"
+          />
+        ) : menuItem.icon ? (
+          <i className={`${menuItem.icon} text-sm`}></i>
+        ) : null}
+        <span>{decodeHtmlEntities(menuItem.label)}</span>
+      </div>
+    );
+  };
+
   if (hasChildren) {
     return (
       <div className="relative group">
@@ -183,23 +201,23 @@ function MenuItem({ item }: { item: MenuItem }) {
           onMouseEnter={() => setIsOpen(true)}
           onMouseLeave={() => setIsOpen(false)}
         >
-          {decodeHtmlEntities(item.label)}
+          {renderMenuItemContent(item)}
           <ChevronDown className="h-4 w-4" />
         </Button>
         {isOpen && item.childItems?.nodes && (
           <div
-            className="absolute top-full left-0 mt-1 w-48 bg-background border rounded-md shadow-lg z-50"
+            className="absolute top-full left-0 w-[max-content] bg-background shadow-lg z-50"
             onMouseEnter={() => setIsOpen(true)}
             onMouseLeave={() => setIsOpen(false)}
           >
-            <div className="py-1">
+            <div className="">
               {item.childItems.nodes.map((child) => (
                 <Link
                   key={child.id}
                   href={child.uri}
-                  className="block px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                  className="flex items-center gap-3 px-4 py-3 text-sm transition-colors"
                 >
-                  {decodeHtmlEntities(child.label)}
+                  {renderMenuItemContent(child)}
                 </Link>
               ))}
             </div>
@@ -211,7 +229,9 @@ function MenuItem({ item }: { item: MenuItem }) {
 
   return (
     <Button asChild variant="ghost" size="sm">
-      <Link href={item.uri}>{item.label}</Link>
+      <Link href={item.uri} className="flex items-center gap-2">
+        {renderMenuItemContent(item)}
+      </Link>
     </Button>
   );
 }

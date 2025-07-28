@@ -22,6 +22,8 @@ export interface MenuItem {
   label: string;
   uri: string;
   parentId: string | null;
+  icon?: string;
+  icon_image?: string;
   childItems?: {
     nodes: MenuItem[];
   };
@@ -55,18 +57,24 @@ const MENU_QUERY = `
             label
             uri
             parentId
+            icon
+            icon_image
             childItems(first: 100) {
               nodes {
                 id
                 label
                 uri
                 parentId
+                icon
+                icon_image
                 childItems(first: 100) {
                   nodes {
                     id
                     label
                     uri
                     parentId
+                    icon
+                    icon_image
                   }
                 }
               }
@@ -132,48 +140,59 @@ export async function getMenu(): Promise<any | null> {
 
 export async function getMenuByLocation(location: string): Promise<any | null> {
   try {
+    // Use REST API to fetch menu
     const response = await fetch(
       `https://jimowers.infy.uk/wp-json/wp/v2/${location}`,
       {
         cache: "no-store",
       }
     );
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+    
     const items = await response.json();
     const WP_DOMAIN = "https://jimowers.infy.uk";
+    
     function cleanHref(href: string) {
       if (!href) return href;
+      // Remove domain if present
       if (href.startsWith(WP_DOMAIN)) {
         href = href.replace(WP_DOMAIN, "");
       }
+      // Remove /category/ prefix
       if (href.startsWith("/category/")) {
         href = href.replace("/category/", "/");
       }
+      // Remove trailing slash (optional)
       if (href.length > 1 && href.endsWith("/")) {
         href = href.slice(0, -1);
       }
       return href;
     }
+
     function cleanMenuTree(nodes: any[]): any[] {
       return nodes.map((item) => ({
         ...item,
         label: decodeHtmlEntities(item.name),
         uri: cleanHref(item.href),
-        href: cleanHref(item.href),
-        childItems: item.children
+        parentId: item.menu_item_parent === "0" ? null : item.menu_item_parent,
+        icon: item.icon || null,
+        icon_image: item.icon_image || null,
+        childItems: item.children && item.children.length > 0
           ? { nodes: cleanMenuTree(item.children) }
           : { nodes: [] },
       }));
     }
+
     return {
       menuItems: {
         nodes: cleanMenuTree(items),
       },
     };
   } catch (error) {
-    console.error(`Error fetching menu for location ${location}:`, error);
+    console.error("Error fetching menu:", error);
     return null;
   }
 }

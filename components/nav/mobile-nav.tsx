@@ -216,6 +216,24 @@ function MobileMenuItem({ item, onOpenChange }: MobileMenuItemProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const hasChildren = item.childItems && item.childItems.nodes.length > 0;
 
+  const renderMenuItemContent = (menuItem: MenuItem) => {
+    console.log('Mobile MenuItem data:', menuItem); // Debug log
+    return (
+      <div className="flex items-center gap-3">
+        {menuItem.icon_image ? (
+          <img 
+            src={menuItem.icon_image} 
+            alt="" 
+            className="w-5 h-5 object-contain"
+          />
+        ) : menuItem.icon ? (
+          <i className={`${menuItem.icon} text-base`}></i>
+        ) : null}
+        <span>{decodeHtmlEntities(menuItem.label)}</span>
+      </div>
+    );
+  };
+
   if (hasChildren) {
     return (
       <div className="flex flex-col space-y-3">
@@ -223,7 +241,7 @@ function MobileMenuItem({ item, onOpenChange }: MobileMenuItemProps) {
           className="flex items-center justify-between text-lg"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <span>{decodeHtmlEntities(item.label)}</span>
+          {renderMenuItemContent(item)}
           <ChevronDown
             className={cn(
               "h-4 w-4 transition-transform",
@@ -248,7 +266,7 @@ function MobileMenuItem({ item, onOpenChange }: MobileMenuItemProps) {
 
   return (
     <MobileLink href={item.uri} onOpenChange={onOpenChange}>
-      {decodeHtmlEntities(item.label)}
+      {renderMenuItemContent(item)}
     </MobileLink>
   );
 }

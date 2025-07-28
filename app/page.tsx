@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import AuthorSpotlightCarousel from "@/components/AuthorSpotlightCarousel";
 import { PiResizeDuotone } from "react-icons/pi";
+import Newsletter from "@/components/Newsletter";
 
 // Helper to fetch only pillar posts
 async function getPillarPosts() {
@@ -148,7 +149,7 @@ export default async function Home() {
                   className="rounded-full border"
                 />
               )}
-              <span className="text-xs text-muted-foreground text-sm">
+              <span className="text-xs text-text-muted-foreground">
                 Created by:{" "}
                 <Link
                   href={`/${testimonialAuthor.slug}`}
@@ -241,30 +242,8 @@ export default async function Home() {
   // 7. Email opt-in/newsletter
   const newsletterSection = (
     <Section className="py-6 sm:py-8">
-      <Container>
-        <div className="max-w-lg mx-auto bg-teal-50 dark:bg-zinc-800 rounded-lg p-4 sm:p-6 text-center">
-          <h3 className="text-base sm:text-lg font-bold mb-2 sm:mb-3">
-            Download Our Free Lawn Mower Maintenance Checklist
-          </h3>
-          <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-            Subscribe to get expert tips, guides, and our exclusive checklist
-            delivered to your inbox.
-          </p>
-          <form className="flex flex-col sm:flex-row gap-2 justify-center">
-            <Input
-              type="email"
-              placeholder="Your email address"
-              required
-              className="flex-1 text-sm sm:text-base"
-            />
-            <button
-              type="submit"
-              className="px-4 sm:px-6 py-2 rounded bg-teal-700 text-white font-semibold hover:bg-teal-800 transition text-sm sm:text-base"
-            >
-              Subscribe
-            </button>
-          </form>
-        </div>
+      <Container className="max-w-3xl mx-auto">
+        <Newsletter />
       </Container>
     </Section>
   );
