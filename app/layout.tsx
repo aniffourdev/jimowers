@@ -7,7 +7,6 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { MobileNav } from "@/components/nav/mobile-nav";
 import { DynamicNav } from "@/components/nav/dynamic-nav";
 import { Analytics } from "@vercel/analytics/react";
-import { Button } from "@/components/ui/button";
 
 import { contentMenu } from "@/menu.config";
 import { siteConfig } from "@/site.config";
@@ -28,10 +27,10 @@ const font = FontSans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://bkmower.com'),
   title: {
-    default: process.env.NEXT_PUBLIC_SITE_NAME || 'Jimowers',
-    template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME || 'Jimowers'}`
+    default: process.env.NEXT_PUBLIC_SITE_NAME || 'Best Lawn Mower Reviews, Buying Guides & Maintenance Tips 2025',
+    template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME || 'Best Lawn Mower Reviews, Buying Guides & Maintenance Tips 2025'}`
   },
   description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'A WordPress site built with Next.js',
   robots: {
