@@ -13,7 +13,7 @@ import { siteConfig } from "@/site.config";
 import { cn } from "@/lib/utils";
 
 import Balancer from "react-wrap-balancer";
-import Logo from "@/public/logo.svg";
+import Logo from "@/public/pediamower.svg";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -101,7 +101,7 @@ const Nav = ({ className, children, id }: NavProps) => {
             alt="Logo"
             loading="eager"
             className="dark:invert"
-            width={120}
+            width={155}
             height={26.44}
           ></Image>
           {/* <h2 className="text-sm">{siteConfig.site_name}</h2> */}
@@ -128,7 +128,7 @@ const Footer = () => {
                 src={Logo}
                 alt="Logo"
                 className="dark:invert -mb-3"
-                width={140}
+                width={200}
                 height={26.44}
               ></Image>
             </Link>

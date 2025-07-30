@@ -92,7 +92,12 @@ export interface Post extends WPEntity {
     | "video"
     | "audio";
   categories: number[];
-  meta: Record<string, unknown>;
+  meta: {
+    _article_rating?: string | null;
+    _article_review_text?: string;
+    _article_rating_count?: number;
+    [key: string]: any; 
+  };
   _embedded?: {
     'wp:featuredmedia'?: Array<{
       source_url: string;
@@ -101,6 +106,7 @@ export interface Post extends WPEntity {
       name: string;
     }>;
   };
+  yoast_head_json?: any;
 }
 
 export interface Page extends WPEntity {
@@ -115,6 +121,7 @@ export interface Page extends WPEntity {
   ping_status: "open" | "closed";
   template: string;
   meta: Record<string, unknown>;
+  yoast_head_json?: any;
 }
 
 // Taxonomy types
@@ -129,7 +136,10 @@ interface Taxonomy {
 }
 
 export interface Category extends Taxonomy {
- parent: number;
+  parent: number;
+  yoast_title?: string;
+  yoast_description?: string;
+  yoast_head_json?: any;
 }
 
 export interface Author {

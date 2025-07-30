@@ -51,12 +51,12 @@ export async function generatePostSchema(post: Post, author: Author) {
 
 export function generateCategorySchema(category: Category) {
   const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/${category.slug}`;
-  
+
   return {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": category.name,
-    "description": category.description,
+    "name": category.yoast_head_json?.title || category.name,
+    "description": category.yoast_head_json?.description || category.description,
     "url": canonicalUrl,
     "mainEntity": {
       "@type": "ItemList",
@@ -114,7 +114,7 @@ export function generateWebSiteSchema() {
   return JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: siteConfig.site_name || 'My Website',
+    name: siteConfig.site_name || 'Bkmower',
     description: siteConfig.site_description || '',
     url: siteUrl,
     potentialAction: {
@@ -130,8 +130,8 @@ export function generateArticleSchema(post: Post) {
   return JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'Article',
-    headline: post.title.rendered || '',
-    description: post.excerpt.rendered || '',
+    headline: post.yoast_head_json?.title || post.title.rendered || '',
+    description: post.yoast_head_json?.description || post.excerpt.rendered || '',
     image: post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '',
     datePublished: post.date || new Date().toISOString(),
     dateModified: post.modified || new Date().toISOString(),
@@ -141,16 +141,24 @@ export function generateArticleSchema(post: Post) {
     },
     publisher: {
       '@type': 'Organization',
-      name: siteConfig.site_name || 'My Website',
+      name: siteConfig.site_name || 'Bkmower',
       logo: {
         '@type': 'ImageObject',
-        url: `${siteUrl}/logo.png`,
+        url: `${siteUrl}/logo.svg`,
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `${siteUrl}/${post.slug || ''}`,
     },
+    ...(post.meta?._article_rating ? {
+      review: {
+        '@type': 'AggregateRating',
+        ratingValue: post.meta._article_rating,
+        bestRating: "5",
+        ratingCount: post.meta._article_rating_count || 0
+      }
+    } : {})
   })
 }
 
@@ -159,13 +167,13 @@ export function generatePageSchema(page: Page) {
   return JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: page.title.rendered || '',
-    description: page.excerpt.rendered || '',
+    name: page.yoast_head_json?.title || page.title.rendered || '',
+    description: page.yoast_head_json?.description || page.excerpt.rendered || '',
     url: `${siteUrl}/${page.slug || ''}`,
     publisher: {
       '@type': 'Organization',
-      name: siteConfig.site_name || 'My Website',
-    },
+      name: siteConfig.site_name || 'Bkmower',
+    }
   })
 }
 

@@ -216,6 +216,13 @@ export async function getPostBySlug(slug: string): Promise<Post> {
     slug,
     _embed: true,
   });
+  if (response && response[0]) {
+    response[0].meta = {
+      _article_rating: response[0].meta['_article_rating'] || null,
+      _article_review_text: response[0].meta['_article_review_text'] || '',
+      _article_rating_count: response[0].meta['_article_rating_count'] || 0
+    };
+  }
   return response[0];
 }
 

@@ -9,6 +9,7 @@ import PageContent from '@/components/PageContent'
 import CategoryContent from '@/components/CategoryContent'
 import AuthorContent from '@/components/AuthorContent'
 import { decodeHtmlEntities, stripHtmlTags } from "@/lib/utils";
+import RatingForm from '@/components/RatingForm'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -27,29 +28,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const author = await getAuthorById(post.author)
     const schema = generateArticleSchema(post)
     const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/${post.slug}`
-    
+
     return {
-      title: post.title.rendered,
-      description: stripHtmlTags(decodeHtmlEntities(post.excerpt.rendered)),
+      title: post.yoast_head_json?.title || post.title.rendered,
+      description: post.yoast_head_json?.description || stripHtmlTags(decodeHtmlEntities(post.excerpt.rendered)),
       alternates: {
         canonical: canonicalUrl,
       },
       openGraph: {
-        title: post.title.rendered,
-        description: stripHtmlTags(decodeHtmlEntities(post.excerpt.rendered)),
+        title: post.yoast_head_json?.title || post.title.rendered,
+        description: post.yoast_head_json?.description || stripHtmlTags(decodeHtmlEntities(post.excerpt.rendered)),
         type: 'article',
         publishedTime: post.date,
         modifiedTime: post.modified,
         authors: [author.name],
         url: canonicalUrl,
+        images: [post._embedded?.['wp:featuredmedia']?.[0]?.source_url || ""],
       },
       twitter: {
         card: 'summary_large_image',
-        title: post.title.rendered,
-        description: stripHtmlTags(decodeHtmlEntities(post.excerpt.rendered)),
+        title: post.yoast_head_json?.title || post.title.rendered,
+        description: post.yoast_head_json?.description || stripHtmlTags(decodeHtmlEntities(post.excerpt.rendered)),
+        images: [post._embedded?.['wp:featuredmedia']?.[0]?.source_url || ""],
       },
       other: {
-        'schema-org': JSON.stringify(schema),
+        'application/ld+json': JSON.stringify(schema),
       },
       robots: {
         index: true,
@@ -86,19 +89,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (category) {
     const schema = generateCategorySchema(category)
     const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/${category.slug}`
-    
+
     return {
-      title: decodeHtmlEntities(category.name),
-      description: `Posts in category ${decodeHtmlEntities(category.name)}`,
+      title: category.yoast_head_json?.title || decodeHtmlEntities(category.name),
+      description: category.yoast_head_json?.description || `Posts in category ${decodeHtmlEntities(category.name)}`,
       openGraph: {
-        title: decodeHtmlEntities(category.name),
-        description: `Posts in category ${decodeHtmlEntities(category.name)}`,
+        title: category.yoast_head_json?.title || decodeHtmlEntities(category.name),
+        description: category.yoast_head_json?.description || `Posts in category ${decodeHtmlEntities(category.name)}`,
         type: 'website',
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/${category.slug}`,
       },
       twitter: {
         card: 'summary',
-        title: decodeHtmlEntities(category.name),
+        title: category.yoast_head_json?.title || decodeHtmlEntities(category.name),
         description: `Posts in category ${decodeHtmlEntities(category.name)}`,
       },
       alternates: {
@@ -109,7 +112,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         follow: true,
       },
       other: {
-        'schema-org': JSON.stringify(schema),
+        'application/ld+json': JSON.stringify(schema),
       },
     }
   }
@@ -159,9 +162,21 @@ export default async function DynamicPage({ params }: Props) {
   const { slug } = await params;
 
   // Try to get post first
-  const post = await getPost(slug)
+  const post = await getPostBySlug(slug)
   if (post) {
-    return <PostContent post={post} />
+    const author = await getAuthorById(post.author);
+    const rating = post.meta?._article_rating ?  String(post.meta._article_rating) : 'Not rated yet';
+    const ratingCount = String(post.meta?._article_rating_count || 0);
+    return (
+      <div>
+       {/* <p>Rating: {rating} {post.meta?._article_rating_count > 0 ? `(Rated by ${ratingCount} users)` : '(Not yet rated)'}</p> */}
+        <PostContent post={post} />
+         {/* Rating Form Component */}
+        <RatingForm postId={post.id} />
+        {/* Author Details */}
+        <AuthorContent author={author} />
+      </div>
+    )
   }
 
   // Try to get page

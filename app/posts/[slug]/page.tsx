@@ -42,12 +42,15 @@ export async function generateMetadata({
   const description = post.excerpt.rendered.replace(/<[^>]*>/g, "").trim();
   ogUrl.searchParams.append("description", description);
 
+  const title = post.yoast_title ? post.yoast_title : post.title.rendered;
+  const metaDescription = post.yoast_description ? post.yoast_description : description;
+
   return {
-    title: post.title.rendered,
-    description: description,
+    title: title,
+    description: metaDescription,
     openGraph: {
-      title: post.title.rendered,
-      description: description,
+      title: title,
+      description: metaDescription,
       type: "article",
       url: `${siteConfig.site_domain}/posts/${post.slug}`,
       images: [
@@ -55,14 +58,14 @@ export async function generateMetadata({
           url: ogUrl.toString(),
           width: 1200,
           height: 630,
-          alt: post.title.rendered,
+          alt: title,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: post.title.rendered,
-      description: description,
+      title: title,
+      description: metaDescription,
       images: [ogUrl.toString()],
     },
   };
