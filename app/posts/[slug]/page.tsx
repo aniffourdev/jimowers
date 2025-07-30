@@ -42,8 +42,8 @@ export async function generateMetadata({
   const description = post.excerpt.rendered.replace(/<[^>]*>/g, "").trim();
   ogUrl.searchParams.append("description", description);
 
-  const title = post.yoast_title ? post.yoast_title : post.title.rendered;
-  const metaDescription = post.yoast_description ? post.yoast_description : description;
+  const title = post.yoast_head_json?.title || post.title.rendered;;
+  const metaDescription = post.yoast_head_json?.description || description;
 
   return {
     title: title,
