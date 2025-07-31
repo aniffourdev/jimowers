@@ -18,7 +18,7 @@ export async function middleware(request: NextRequest) {
             <body style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui">
               <div style="text-align:center">
                 <h1>Under Maintenance</h1>
-                <p>Website is currently under maintenance. Please check back later.</p>
+                <p>Website is currently under maintenance. Please check back later....</p>
               </div>
             </body>
           </html>`,
