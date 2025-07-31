@@ -109,7 +109,7 @@ function ensureValidUrl(url: string | undefined): string {
   }
 }
 
-export function generateWebSiteSchema() {
+export function generateWebSiteSchema(homepage: Page) {
   const siteUrl = ensureValidUrl(siteConfig.site_domain);
   return JSON.stringify({
     '@context': 'https://schema.org',

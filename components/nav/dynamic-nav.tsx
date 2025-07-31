@@ -174,7 +174,7 @@ function MenuItem({ item }: { item: MenuItem }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const renderMenuItemContent = (menuItem: MenuItem) => {
-    console.log('MenuItem data:', menuItem); // Debug log
+    // console.log('MenuItem data:', menuItem); // Debug log
     return (
       <div className="flex items-center gap-2">
         {menuItem.icon_image ? (

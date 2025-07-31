@@ -1,5 +1,4 @@
 import "./globals.css";
-
 import { Section, Container } from "@/components/craft";
 import { Inter as FontSans } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -16,9 +15,7 @@ import Balancer from "react-wrap-balancer";
 import Logo from "@/public/pediamower.svg";
 import Image from "next/image";
 import Link from "next/link";
-
 import type { Metadata } from "next";
-import { generateWebSiteSchema } from "@/lib/schema";
 import FooterNav from "@/components/nav/footer-nav";
 
 const font = FontSans({
@@ -27,7 +24,7 @@ const font = FontSans({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://bkmower.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://pediamower.com'),
   title: {
     default: process.env.NEXT_PUBLIC_SITE_NAME || 'Best Lawn Mower Reviews, Buying Guides & Maintenance Tips 2025',
     template: `%s | ${process.env.NEXT_PUBLIC_SITE_NAME || 'Best Lawn Mower Reviews, Buying Guides & Maintenance Tips 2025'}`
@@ -44,9 +41,7 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  other: {
-    'application/ld+json': generateWebSiteSchema(),
-  },
+  // Removed schema from here - will be handled dynamically in page components
 };
 
 export default function RootLayout({
@@ -57,9 +52,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta charSet="utf-8" />
+        {/* Remove this meta tag - Next.js adds charset automatically */}
+        {/* Schema markup is now handled dynamically in individual pages */}
       </head>
-      <body className={cn("min-h-screen font-sans antialiased", font.variable)}>
+      <body 
+        className={cn("min-h-screen font-sans antialiased", font.variable)}
+        suppressHydrationWarning={true}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

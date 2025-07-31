@@ -8,6 +8,7 @@ import {
   getAllPosts,
   getPostsByCategory,
   getAuthorById,
+  getPageBySlug,
 } from "@/lib/wordpress";
 import { decodeHtmlEntities } from "@/lib/utils";
 import Link from "next/link";
@@ -16,11 +17,38 @@ import Image from "next/image";
 import AuthorSpotlightCarousel from "@/components/AuthorSpotlightCarousel";
 import { PiResizeDuotone } from "react-icons/pi";
 import Newsletter from "@/components/Newsletter";
+import { generateWebSiteSchema } from "@/lib/schema";
+
+// Define the Page type
+type Page = {
+  id: number;
+  slug: string;
+  title: {
+    rendered: string;
+  };
+  content: {
+    rendered: string;
+  };
+  yoast_head_json?: {
+    title: string;
+    description: string;
+  };
+  // Add other properties as needed
+};
 
 // Helper to fetch only pillar posts
 async function getPillarPosts() {
-  // Use the integer term ID for pillar (13)
   return await getAllPosts({ content_type: 13 });
+}
+
+// Helper function to generate schema markup as JSX
+function generateSchemaMarkup(schema: any) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
 }
 
 // SVG for ruler/mower illustration
@@ -47,13 +75,15 @@ const RulerSVG = () => (
 );
 
 export default async function Home() {
-  // Fetch data
+  // Fetch homepage data
+  const homepage = await getPageBySlug('home');
+  const websiteSchema = generateWebSiteSchema(homepage);
+
+  // Fetch other data
   const categories = await getAllCategories();
   const authors = await getAllAuthors();
   const posts = await getAllPosts({});
   const pillarPosts = await getPillarPosts();
-
-  // Fetch author with id 2 for testimonial
   const testimonialAuthor = await getAuthorById(2);
 
   // 1. Hero Section
@@ -61,11 +91,10 @@ export default async function Home() {
     <Section className="py-8 sm:py-12 md:py-16 lg:py-20 text-center bg-teal-50 dark:bg-zinc-900">
       <Container>
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black mb-3 sm:mb-4">
-          Your Ultimate Guide to Lawn Mowers and Eco-Friendly Lawn Care
+          {homepage?.yoast_head_json?.title || 'Your Ultimate Guide to Lawn Mowers and Eco-Friendly Lawn Care'}
         </h1>
         <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-6 sm:mb-8">
-          Expert reviews, maintenance tips, and eco-friendly guides from trusted
-          authors.
+          {homepage?.yoast_head_json?.description || 'Expert reviews, maintenance tips, and eco-friendly guides from trusted authors.'}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-6 sm:mb-8">
           <Link
@@ -198,9 +227,9 @@ export default async function Home() {
       "Eco-Friendly Lawn Specialist",
       "Maintenance Guru",
     ][i % 3],
-    bio:
-      author.description || "Trusted contributor to our lawn care community.",
+    bio: author.description || "Trusted contributor to our lawn care community.",
   }));
+
   const authorSpotlight = (
     <Section className="py-6 sm:py-8">
       <Container>
@@ -250,6 +279,7 @@ export default async function Home() {
 
   return (
     <main>
+      {generateSchemaMarkup(websiteSchema)}
       {hero}
       {pillarGrid}
       {sizeFinderSection}

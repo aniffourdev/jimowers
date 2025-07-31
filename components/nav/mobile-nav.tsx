@@ -217,7 +217,7 @@ function MobileMenuItem({ item, onOpenChange }: MobileMenuItemProps) {
   const hasChildren = item.childItems && item.childItems.nodes.length > 0;
 
   const renderMenuItemContent = (menuItem: MenuItem) => {
-    console.log('Mobile MenuItem data:', menuItem); // Debug log
+    // console.log('Mobile MenuItem data:', menuItem); // Debug log
     return (
       <div className="flex items-center gap-3">
         {menuItem.icon_image ? (
